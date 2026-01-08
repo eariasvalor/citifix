@@ -52,4 +52,18 @@ public class UrbanIssue {
     public IssueStatus getStatus() { return status; }
 
     public void setId(Long id) { this.id = id; }
+
+    public void markAsInProgress() {
+        if (this.status == IssueStatus.RESOLVED) {
+            throw new IllegalStateException("Cannot work on a resolved issue");
+        }
+        this.status = IssueStatus.IN_PROGRESS;
+    }
+
+    public void resolve() {
+        if (this.status == IssueStatus.REPORTED) {
+            throw new IllegalStateException("Issue must be IN_PROGRESS before resolving");
+        }
+        this.status = IssueStatus.RESOLVED;
+    }
 }

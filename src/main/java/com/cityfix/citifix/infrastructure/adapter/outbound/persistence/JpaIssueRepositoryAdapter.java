@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -58,5 +59,17 @@ public class JpaIssueRepositoryAdapter implements IssueRepositoryPort {
                         IssueStatus.valueOf(entity.getStatus())
                 ))
                 .toList();
+    }
+
+    @Override
+    public Optional<UrbanIssue> findById(Long id) {
+        return springRepository.findById(id)
+                .map(entity -> UrbanIssue.rehydrate(
+                        entity.getId(),
+                        new IssueTitle(entity.getTitle()),
+                        new Coordinates(entity.getLatitude(), entity.getLongitude()),
+                        new UserId(entity.getReporterId()),
+                        IssueStatus.valueOf(entity.getStatus())
+                ));
     }
 }

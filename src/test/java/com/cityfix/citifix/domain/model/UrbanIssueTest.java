@@ -43,4 +43,33 @@ class UrbanIssueTest {
         assertThrows(IllegalArgumentException.class,
                 () -> new UrbanIssue(null, title, coords, null));
     }
+
+    @Test
+    @DisplayName("Should update status to IN_PROGRESS")
+    void shouldMarkAsInProgress() {
+        var issue = new UrbanIssue(1L, new IssueTitle("Title"), new Coordinates(1.0, 1.0), new UserId(1L));
+
+        issue.markAsInProgress();
+
+        assertEquals(IssueStatus.IN_PROGRESS, issue.getStatus());
+    }
+
+    @Test
+    @DisplayName("Should update status to RESOLVED")
+    void shouldResolveIssue() {
+        var issue = new UrbanIssue(1L, new IssueTitle("Title"), new Coordinates(1.0, 1.0), new UserId(1L));
+        issue.markAsInProgress();
+
+        issue.resolve();
+
+        assertEquals(IssueStatus.RESOLVED, issue.getStatus());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when resolving a reported issue directly (Strict Workflow)")
+    void shouldNotResolveDirectlyFromReported() {
+        var issue = new UrbanIssue(1L, new IssueTitle("Title"), new Coordinates(1.0, 1.0), new UserId(1L));
+
+        assertThrows(IllegalStateException.class, issue::resolve);
+    }
 }

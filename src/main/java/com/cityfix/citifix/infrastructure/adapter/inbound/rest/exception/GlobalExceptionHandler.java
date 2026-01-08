@@ -16,7 +16,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
-
         List<String> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -32,12 +31,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleDomainErrors(IllegalArgumentException ex) {
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    public ResponseEntity<ErrorResponse> handleDomainErrors(RuntimeException ex) {
 
         var response = new ErrorResponse(
                 "DOMAIN_ERROR",
-                ex.getMessage(), List.of());
+                ex.getMessage(),
+                List.of()
+        );
 
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
     }
@@ -45,6 +46,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpectedErrors(Exception ex) {
         ex.printStackTrace();
+
         var response = new ErrorResponse(
                 "INTERNAL_SERVER_ERROR",
                 "An unexpected error occurred",

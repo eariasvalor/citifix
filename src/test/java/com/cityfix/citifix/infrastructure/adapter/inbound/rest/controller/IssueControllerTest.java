@@ -2,6 +2,7 @@ package com.cityfix.citifix.infrastructure.adapter.inbound.rest.controller;
 
 import com.cityfix.citifix.application.port.in.CreateIssueInputPort;
 import com.cityfix.citifix.application.port.in.FindNearbyIssuesInputPort;
+import com.cityfix.citifix.application.port.in.UpdateIssueStatusInputPort;
 import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
 import com.cityfix.citifix.application.port.in.query.FindNearbyIssuesQuery;
 import com.cityfix.citifix.domain.model.UrbanIssue;
@@ -9,6 +10,7 @@ import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
 import com.cityfix.citifix.domain.model.valueobject.UserId;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request.CreateIssueRequest;
+import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request.UpdateStatusRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,14 +20,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
-
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,8 +44,11 @@ class IssueControllerTest {
     @MockBean
     private CreateIssueInputPort createIssueInputPort;
 
-    @MockBean //
+    @MockBean
     private FindNearbyIssuesInputPort findNearbyInputPort;
+
+    @MockBean
+    private UpdateIssueStatusInputPort updateStatusInputPort;
 
     @Test
     @DisplayName("Should create issue via REST API and return 201 Created")
@@ -111,5 +115,35 @@ class IssueControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].title").value("Found it!"));
+    }
+
+    @Test
+    @DisplayName("Should update issue status and return 200 OK")
+    void shouldUpdateStatus() throws Exception {
+        Long issueId = 1L;
+        var request = new UpdateStatusRequest("IN_PROGRESS");
+
+        mockMvc.perform(patch("/api/issues/{id}/status", issueId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        verify(updateStatusInputPort).execute(
+                argThat(cmd -> cmd.issueId().equals(1L) && cmd.newStatus().equals("IN_PROGRESS"))
+        );
+    }
+
+    @Test
+    @DisplayName("Should return 422 when breaking business rules (Workflow Violation)")
+    void shouldReturn422OnWorkflowViolation() throws Exception {
+        var request = new UpdateStatusRequest("RESOLVED");
+
+        doThrow(new IllegalStateException("Issue must be IN_PROGRESS before resolving"))
+                .when(updateStatusInputPort).execute(any());
+
+        mockMvc.perform(patch("/api/issues/1/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("$.type").value("DOMAIN_ERROR"));
     }
 }

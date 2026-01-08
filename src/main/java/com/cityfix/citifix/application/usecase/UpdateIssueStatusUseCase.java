@@ -1,0 +1,29 @@
+package com.cityfix.citifix.application.usecase;
+
+import com.cityfix.citifix.application.port.in.command.UpdateIssueStatusCommand;
+import com.cityfix.citifix.domain.model.UrbanIssue;
+import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class UpdateIssueStatusUseCase {
+
+    private final IssueRepositoryPort repositoryPort;
+
+    @Transactional
+    public void execute(UpdateIssueStatusCommand command) {
+        UrbanIssue issue = repositoryPort.findById(command.issueId())
+                .orElseThrow(() -> new IllegalArgumentException("Issue not found with ID: " + command.issueId()));
+
+        switch (command.newStatus()) {
+            case "IN_PROGRESS" -> issue.markAsInProgress();
+            case "RESOLVED" -> issue.resolve();
+            default -> throw new IllegalArgumentException("Invalid status action: " + command.newStatus());
+        }
+
+        repositoryPort.save(issue);
+    }
+}
