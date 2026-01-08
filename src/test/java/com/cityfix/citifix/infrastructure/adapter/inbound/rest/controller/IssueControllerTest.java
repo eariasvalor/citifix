@@ -57,4 +57,29 @@ class IssueControllerTest {
                 .andExpect(jsonPath("$.title").value("Dangerous pothole"))
                 .andExpect(jsonPath("$.status").value("REPORTED"));
     }
+
+    @Test
+    @DisplayName("Should return 400 Bad Request when JSON fields are invalid")
+    void shouldReturn400WhenRequestIsInvalid() throws Exception {
+        var invalidRequest = new CreateIssueRequest(null, 500.0, 500.0);
+        mockMvc.perform(post("/api/issues")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.type").value("VALIDATION_ERROR")).andExpect(jsonPath("$.details").isArray());
+    }
+
+    @Test
+    @DisplayName("Should return 422 Unprocessable Entity when Domain Logic fails")
+    void shouldReturn422WhenDomainFails() throws Exception {
+        var request = new CreateIssueRequest("Title", 41.0, 2.0);
+
+        when(inputPort.execute(any(CreateIssueCommand.class)))
+                .thenThrow(new IllegalArgumentException("Coordinates are outside the allowed zone"));
+
+        mockMvc.perform(post("/api/issues")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("$.type").value("DOMAIN_ERROR"))
+                .andExpect(jsonPath("$.message").value("Coordinates are outside the allowed zone"));
+    }
 }
