@@ -52,4 +52,19 @@ class JpaIssueRepositoryAdapterTest {
         assertThat(entityInDb.getTitle()).isEqualTo("Bump in the street");
         assertThat(entityInDb.getLatitude()).isEqualTo(41.38);
     }
+
+    @Test
+    @DisplayName("Should find issues within radius and exclude far ones")
+    void shouldFindNearbyIssues() {
+        var centerIssue = new UrbanIssue(null, new IssueTitle("Center"), new Coordinates(41.3870, 2.1700), new UserId(1L));
+        adapter.save(centerIssue);
+
+        var farIssue = new UrbanIssue(null, new IssueTitle("Far away"), new Coordinates(40.4168, -3.7038), new UserId(1L));
+        adapter.save(farIssue);
+
+        var results = adapter.findNearby(41.3870, 2.1700, 1000.0, 0, 1);
+
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getTitle().value()).isEqualTo("Center");
+    }
 }

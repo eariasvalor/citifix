@@ -9,7 +9,11 @@ import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity.IssueEntity;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.repository.SpringDataIssueRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -36,5 +40,23 @@ public class JpaIssueRepositoryAdapter implements IssueRepositoryPort {
                 new UserId(savedEntity.getReporterId()),
                 IssueStatus.valueOf(savedEntity.getStatus())
         );
+    }
+
+    @Override
+    public List<UrbanIssue> findNearby(Double lat, Double lon, Double radiusMeters, int page, int size) {
+
+
+        var pageable = PageRequest.of(page, size);
+
+        return springRepository.findNearby(lat, lon, radiusMeters, pageable)
+                .stream()
+                .map(entity -> UrbanIssue.rehydrate(
+                        entity.getId(),
+                        new IssueTitle(entity.getTitle()),
+                        new Coordinates(entity.getLatitude(), entity.getLongitude()),
+                        new UserId(entity.getReporterId()),
+                        IssueStatus.valueOf(entity.getStatus())
+                ))
+                .toList();
     }
 }
