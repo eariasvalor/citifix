@@ -33,6 +33,18 @@ public class UrbanIssue {
         this.status = IssueStatus.REPORTED;
     }
 
+    private UrbanIssue(Long id, IssueTitle title, Coordinates coordinates, UserId reporterId, IssueStatus status) {
+        this.id = id;
+        this.title = title;
+        this.coordinates = coordinates;
+        this.reporterId = reporterId;
+        this.status = status;
+    }
+
+    public static UrbanIssue rehydrate(Long id, IssueTitle title, Coordinates coordinates, UserId reporterId, IssueStatus status) {
+        return new UrbanIssue(id, title, coordinates, reporterId, status);
+    }
+
     public Long getId() { return id; }
     public IssueTitle getTitle() { return title; }
     public Coordinates getCoordinates() { return coordinates; }
