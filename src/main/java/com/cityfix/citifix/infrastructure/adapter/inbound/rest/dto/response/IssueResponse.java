@@ -1,4 +1,7 @@
 package com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.response;
 
-public record IssueResponse() {
-}
+public record IssueResponse(
+        Long id,
+        String title,
+        String status
+) {}
