@@ -1,0 +1,4 @@
+package com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.response;
+
+public record IssueResponse() {
+}
