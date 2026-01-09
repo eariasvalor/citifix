@@ -10,6 +10,11 @@ import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request.CreateIssueRequest;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request.UpdateStatusRequest;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.response.IssueResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,12 +26,18 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/issues")
 @RequiredArgsConstructor
+@Tag(name = "Urban Issues", description = "Operations related to reporting and managing city issues")
 public class IssueController {
 
     private final CreateIssueInputPort createIssueInputPort;
     private final FindNearbyIssuesInputPort findNearbyIssuesInputPort;
     private final UpdateIssueStatusInputPort updateIssueStatusInputPort;
 
+    @Operation(summary = "Report a new issue", description = "Creates a new urban issue. Latitude must be between -90 and 90.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Issue created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data")
+    })
     @PostMapping
     public ResponseEntity<IssueResponse> create(@RequestBody @Valid CreateIssueRequest request) {
 
@@ -50,11 +61,12 @@ public class IssueController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @Operation(summary = "Find nearby issues", description = "Returns a paginated list of issues within a specific radius (in meters).")
     @GetMapping("/nearby")
     public ResponseEntity<List<IssueResponse>> findNearby(
-            @RequestParam("lat") Double lat,
-            @RequestParam("lon") Double lon,
-            @RequestParam("radius") Double radius,
+            @Parameter(description = "Center Latitude", example = "41.3879") @RequestParam("lat") Double lat,
+            @Parameter(description = "Center Longitude", example = "2.1699") @RequestParam("lon") Double lon,
+            @Parameter(description = "Radius in meters", example = "500") @RequestParam("radius") Double radius,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
@@ -73,6 +85,11 @@ public class IssueController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Update issue status", description = "Updates the status (e.g., from REPORTED to IN_PROGRESS). Enforces business workflow.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Status updated successfully"),
+            @ApiResponse(responseCode = "422", description = "Business rule violation (e.g. invalid transition)")
+    })
     @PatchMapping("/{id}/status")
     public ResponseEntity<Void> updateStatus(
             @PathVariable Long id,
