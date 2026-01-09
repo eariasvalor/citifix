@@ -1,5 +1,6 @@
 package com.cityfix.citifix.application.usecase;
 
+import com.cityfix.citifix.application.port.in.UpdateIssueStatusInputPort;
 import com.cityfix.citifix.application.port.in.command.UpdateIssueStatusCommand;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
@@ -9,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class UpdateIssueStatusUseCase {
+public class UpdateIssueStatusUseCase implements UpdateIssueStatusInputPort {
 
     private final IssueRepositoryPort repositoryPort;
 
