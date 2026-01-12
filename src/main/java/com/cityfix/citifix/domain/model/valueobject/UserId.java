@@ -10,4 +10,8 @@ public record UserId(Long value) {
             throw new IllegalArgumentException("User ID must be positive");
         }
     }
+
+    public Long getValue() {
+        return value;
+    }
 }

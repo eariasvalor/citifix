@@ -1,4 +1,4 @@
-package com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request;
+package com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.issue;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
