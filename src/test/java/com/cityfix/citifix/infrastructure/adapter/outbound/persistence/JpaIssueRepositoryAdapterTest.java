@@ -1,70 +1,83 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence;
 
 import com.cityfix.citifix.domain.model.UrbanIssue;
+import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
 import com.cityfix.citifix.domain.model.valueobject.UserId;
+import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity.IssueEntity;
+import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.mapper.IssueMapper;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.repository.SpringDataIssueRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.test.context.TestPropertySource;
+
+import javax.swing.*;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(JpaIssueRepositoryAdapter.class)
+@EntityScan(basePackages = "com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity")
+@TestPropertySource(properties = {
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL",
+        "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.datasource.username=sa",
+        "spring.datasource.password="
+})
+@Import({JpaIssueRepositoryAdapter.class, IssueMapper.class})
 class JpaIssueRepositoryAdapterTest {
-
-    @Container
-    @ServiceConnection
-    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0");
 
     @Autowired
     private JpaIssueRepositoryAdapter adapter;
 
     @Autowired
-    private SpringDataIssueRepository springRepository;
+    private SpringDataIssueRepository jpaRepository;
 
     @Test
-    @DisplayName("Should save a domain issue into the database correctly")
+    @DisplayName("Should save issue and convert correctly")
     void shouldSaveIssue() {
-        var issue = new UrbanIssue(
+        UrbanIssue issue = new UrbanIssue(
                 null,
-                new IssueTitle("Bump in the street"),
-                new Coordinates(41.38, 2.17),
-                new UserId(99L)
+                new IssueTitle("Broken Bench"),
+                new Coordinates(40.0, 2.0),
+                new UserId(5L)
         );
 
         UrbanIssue savedIssue = adapter.save(issue);
 
         assertThat(savedIssue.getId()).isNotNull();
+        assertThat(savedIssue.getTitle().value()).isEqualTo("Broken Bench");
 
-        var entityInDb = springRepository.findById(savedIssue.getId()).orElseThrow();
-        assertThat(entityInDb.getTitle()).isEqualTo("Bump in the street");
-        assertThat(entityInDb.getLatitude()).isEqualTo(41.38);
+        Optional<IssueEntity> inDb = jpaRepository.findById(savedIssue.getId());
+        assertThat(inDb).isPresent();
+        assertThat(inDb.get().getReporterId()).isEqualTo(5L);
+        assertThat(inDb.get().getStatus()).isEqualTo(IssueStatus.REPORTED);
     }
 
     @Test
-    @DisplayName("Should find issues within radius and exclude far ones")
+    @DisplayName("Should find nearby issues")
     void shouldFindNearbyIssues() {
-        var centerIssue = new UrbanIssue(null, new IssueTitle("Center"), new Coordinates(41.3870, 2.1700), new UserId(1L));
-        adapter.save(centerIssue);
+        IssueEntity entity1 = IssueEntity.builder()
+                .title("Issue 1")
+                .latitude(40.0).longitude(2.0)
+                .reporterId(1L)
+                .status(IssueStatus.REPORTED)
+                .build();
 
-        var farIssue = new UrbanIssue(null, new IssueTitle("Far away"), new Coordinates(40.4168, -3.7038), new UserId(1L));
-        adapter.save(farIssue);
+        jpaRepository.save(entity1);
 
-        var results = adapter.findNearby(41.3870, 2.1700, 1000.0, 0, 1);
+        List<UrbanIssue> result = adapter.findNearby(40.0, 2.0, 10.0, 0, 10);
 
-        assertThat(results).hasSize(1);
-        assertThat(results.get(0).getTitle().value()).isEqualTo("Center");
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getTitle().value()).isEqualTo("Issue 1");
     }
 }

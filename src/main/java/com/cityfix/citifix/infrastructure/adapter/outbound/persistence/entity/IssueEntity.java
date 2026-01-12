@@ -1,15 +1,14 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity;
 
+import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
-@Table(name = "issues")
+@Table(name = "urban_issues")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class IssueEntity {
@@ -18,18 +17,13 @@ public class IssueEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String title;
-
-    @Column(nullable = false)
     private Double latitude;
-
-    @Column(nullable = false)
     private Double longitude;
 
     @Column(name = "reporter_id", nullable = false)
     private Long reporterId;
 
-    @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private IssueStatus status;
 }
