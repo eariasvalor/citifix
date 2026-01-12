@@ -7,13 +7,14 @@ import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
 import com.cityfix.citifix.application.port.in.command.UpdateIssueStatusCommand;
 import com.cityfix.citifix.application.port.in.query.FindNearbyIssuesQuery;
 import com.cityfix.citifix.domain.model.UrbanIssue;
-import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request.CreateIssueRequest;
+import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.issue.CreateIssueRequest;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request.UpdateStatusRequest;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.response.IssueResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/issues")
@@ -33,32 +36,22 @@ public class IssueController {
     private final FindNearbyIssuesInputPort findNearbyIssuesInputPort;
     private final UpdateIssueStatusInputPort updateIssueStatusInputPort;
 
-    @Operation(summary = "Report a new issue", description = "Creates a new urban issue. Latitude must be between -90 and 90.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Issue created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
-    })
     @PostMapping
-    public ResponseEntity<IssueResponse> create(@RequestBody @Valid CreateIssueRequest request) {
-
-        Long fakeUserId = 1L;
-
-        var command = new CreateIssueCommand(
+    @Operation(summary = "Report a new issue")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Map<String, Long>> reportIssue(
+            @RequestBody @Valid CreateIssueRequest request,
+            Principal principal     ) {
+                var command = new CreateIssueCommand(
                 request.title(),
                 request.latitude(),
                 request.longitude(),
-                fakeUserId
-        );
+                principal.getName()         );
 
-        UrbanIssue domainIssue = createIssueInputPort.execute(command);
+        Long issueId = createIssueInputPort.execute(command);
 
-        var response = new IssueResponse(
-                domainIssue.getId(),
-                domainIssue.getTitle().value(),
-                domainIssue.getStatus().name()
-        );
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("id", issueId));
     }
 
     @Operation(summary = "Find nearby issues", description = "Returns a paginated list of issues within a specific radius (in meters).")
