@@ -5,6 +5,7 @@ import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.mapper.IssueMapper;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.repository.SpringDataIssueRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -31,14 +32,22 @@ public class JpaIssueRepositoryAdapter implements IssueRepositoryPort {
                 .map(issueMapper::toDomain);
     }
 
-
     @Override
-    public List<UrbanIssue> findNearby(Double latitude, Double longitude, Double radiusInKm, Integer page, Integer size) {
+    public List<UrbanIssue> findNearby(Double latitude, Double longitude, Double radiusInMeters, Integer page, Integer size) {
         int p = (page != null) ? page : 0;
         int s = (size != null) ? size : 10;
 
-        return repository.findAll().stream()
-                .skip((long) p * s).limit(s).map(issueMapper::toDomain)
+        Double radiusInKm = (radiusInMeters != null) ? radiusInMeters / 1000.0 : 0.1;
+
+        var entities = repository.findNearby(
+                latitude,
+                longitude,
+                radiusInKm,
+                PageRequest.of(p, s)
+        );
+
+        return entities.stream()
+                .map(issueMapper::toDomain)
                 .collect(Collectors.toList());
     }
 }
