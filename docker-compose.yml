@@ -1,39 +1,40 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: cityfix-mysql
-    restart: always
-    environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  postgres:
+    image: postgres:16-alpine
+    container_name: cityfix-postgres
     ports:
-      - "${MYSQL_LOCAL_PORT}:3306"
+      - "${POSTGRES_LOCAL_PORT}:5432" # Puerto estándar de Postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
-      timeout: 20s
-      retries: 10
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - cityfix-network
+    restart: always
 
-  app:
+  api:
     build: .
     container_name: cityfix-api
+    depends_on:
+      - postgres
     ports:
       - "8080:8080"
     environment:
-
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false
-      - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
-      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_JPA_SHOW_SQL=true
-    depends_on:
-      mysql:
-        condition: service_healthy
+    networks:
+      - cityfix-network
+    restart: always
 
 volumes:
-  mysql_data:
+  postgres_data:
+
+networks:
+  cityfix-network:
+    driver: bridge

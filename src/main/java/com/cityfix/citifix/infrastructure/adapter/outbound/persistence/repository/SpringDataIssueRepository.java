@@ -13,13 +13,13 @@ import java.util.List;
 public interface SpringDataIssueRepository extends JpaRepository<IssueEntity, Long> {
 
     @Query(value = """
-            SELECT * FROM urban_issues i
-            WHERE (6371 * acos(
-                    cos(radians(:lat)) * cos(radians(i.latitude)) *
-                    cos(radians(i.longitude) - radians(:lon)) +
-                    sin(radians(:lat)) * sin(radians(i.latitude))
-            )) <= :radius
-            """, nativeQuery = true)
+        SELECT * FROM urban_issues i
+        WHERE (6371 * acos(LEAST(1.0, 
+                cos(radians(:lat)) * cos(radians(i.latitude)) *
+                cos(radians(i.longitude) - radians(:lon)) +
+                sin(radians(:lat)) * sin(radians(i.latitude))
+        ))) <= :radius
+        """, nativeQuery = true)
     List<IssueEntity> findNearby(
             @Param("lat") Double lat,
             @Param("lon") Double lon,

@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EntityScan(basePackages = "com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity")
 @TestPropertySource(properties = {
         "spring.jpa.hibernate.ddl-auto=create-drop",
-        "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL",
+        "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
         "spring.datasource.driver-class-name=org.h2.Driver",
         "spring.datasource.username=sa",
         "spring.datasource.password="
