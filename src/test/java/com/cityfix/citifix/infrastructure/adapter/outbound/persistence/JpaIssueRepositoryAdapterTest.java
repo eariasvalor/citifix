@@ -1,6 +1,7 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence;
 
 import com.cityfix.citifix.domain.model.UrbanIssue;
+import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
@@ -49,7 +50,8 @@ class JpaIssueRepositoryAdapterTest {
                 null,
                 new IssueTitle("Broken Bench"),
                 new Coordinates(40.0, 2.0),
-                new UserId(5L)
+                new UserId(5L),
+                IssueCategory.OTHER
         );
 
         UrbanIssue savedIssue = adapter.save(issue);
@@ -61,6 +63,7 @@ class JpaIssueRepositoryAdapterTest {
         assertThat(inDb).isPresent();
         assertThat(inDb.get().getReporterId()).isEqualTo(5L);
         assertThat(inDb.get().getStatus()).isEqualTo(IssueStatus.REPORTED);
+        assertThat(inDb.get().getCategory()).isEqualTo(IssueCategory.OTHER);
     }
 
     @Test

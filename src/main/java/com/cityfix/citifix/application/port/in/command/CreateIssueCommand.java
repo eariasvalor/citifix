@@ -4,5 +4,6 @@ public record CreateIssueCommand(
         String title,
         Double latitude,
         Double longitude,
-        String reporterEmail
+        String reporterEmail,
+        String category
 ) {}

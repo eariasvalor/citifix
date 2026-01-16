@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/issues")
@@ -41,19 +40,21 @@ public class IssueController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<IssueResponse> reportIssue(
             @RequestBody @Valid CreateIssueRequest request,
-            Principal principal     ) {
-                var command = new CreateIssueCommand(
+            Principal principal) {
+        var command = new CreateIssueCommand(
                 request.title(),
                 request.latitude(),
                 request.longitude(),
-                principal.getName()         );
+                principal.getName(),
+                request.category());
 
         UrbanIssue issue = createIssueInputPort.execute(command);
 
         IssueResponse response = new IssueResponse(
                 issue.getId(),
                 issue.getTitle().value(),
-                issue.getStatus().name()
+                issue.getStatus().name(),
+                issue.getCategory().name()
         );
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -77,7 +78,8 @@ public class IssueController {
                 .map(issue -> new IssueResponse(
                         issue.getId(),
                         issue.getTitle().value(),
-                        issue.getStatus().name()
+                        issue.getStatus().name(),
+                        issue.getCategory().name()
                 ))
                 .toList();
 

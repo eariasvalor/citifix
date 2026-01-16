@@ -41,34 +41,39 @@ EXCEPT SELECT user_id, role FROM user_roles;
 
 -- NOTE: We use subqueries to get the reporter's ID (citizen@cityfix.com)
 -- Table: urban_issues (matches IssueEntity)
--- Fields: title, latitude, longitude, status, reporter_id
+-- Fields: title, latitude, longitude, status, category, reporter_id
 
 -- Issue 1: REPORTED (Newly created) - Near Sagrada Familia
-INSERT INTO urban_issues (title, latitude, longitude, status, reporter_id)
-SELECT 'Broken traffic light at Sagrada Familia', 41.4036, 2.1744, 'REPORTED', id
+-- Category: LIGHTING (Traffic light)
+INSERT INTO urban_issues (title, latitude, longitude, status, category, reporter_id)
+SELECT 'Broken traffic light at Sagrada Familia', 41.4036, 2.1744, 'REPORTED', 'LIGHTING', id
 FROM users WHERE email = 'citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Broken traffic light at Sagrada Familia');
 
 -- Issue 2: IN_PROGRESS (Under repair) - Plaza Cataluña
-INSERT INTO urban_issues (title, latitude, longitude, status, reporter_id)
-SELECT 'Dangerous pothole in bike lane', 41.3870, 2.1700, 'IN_PROGRESS', id
+-- Category: ROAD (Pothole)
+INSERT INTO urban_issues (title, latitude, longitude, status, category, reporter_id)
+SELECT 'Dangerous pothole in bike lane', 41.3870, 2.1700, 'IN_PROGRESS', 'ROAD', id
 FROM users WHERE email = 'citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Dangerous pothole in bike lane');
 
 -- Issue 3: RESOLVED (Fixed) - Park Güell
-INSERT INTO urban_issues (title, latitude, longitude, status, reporter_id)
-SELECT 'Broken bench at viewpoint', 41.4145, 2.1527, 'RESOLVED', id
+-- Category: OTHER (Bench/Furniture)
+INSERT INTO urban_issues (title, latitude, longitude, status, category, reporter_id)
+SELECT 'Broken bench at viewpoint', 41.4145, 2.1527, 'RESOLVED', 'OTHER', id
 FROM users WHERE email = 'citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Broken bench at viewpoint');
 
 -- Issue 4: REPORTED (Another new one) - Barceloneta Beach
-INSERT INTO urban_issues (title, latitude, longitude, status, reporter_id)
-SELECT 'Public showers not working', 41.3784, 2.1925, 'REPORTED', id
+-- Category: OTHER (Public facility)
+INSERT INTO urban_issues (title, latitude, longitude, status, category, reporter_id)
+SELECT 'Public showers not working', 41.3784, 2.1925, 'REPORTED', 'OTHER', id
 FROM users WHERE email = 'citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Public showers not working');
 
 -- Issue 5: IN_PROGRESS (Active work) - Camp Nou
-INSERT INTO urban_issues (title, latitude, longitude, status, reporter_id)
-SELECT 'Burnt trash container', 41.3809, 2.1228, 'IN_PROGRESS', id
+-- Category: TRASH (Container)
+INSERT INTO urban_issues (title, latitude, longitude, status, category, reporter_id)
+SELECT 'Burnt trash container', 41.3809, 2.1228, 'IN_PROGRESS', 'TRASH', id
 FROM users WHERE email = 'citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Burnt trash container');

@@ -1,9 +1,6 @@
 package com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.issue;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 public record CreateIssueRequest(
         @NotBlank(message = "Title is required")
@@ -15,5 +12,8 @@ public record CreateIssueRequest(
 
         @NotNull(message = "Longitude is required")
         @Min(-180) @Max(180)
-        Double longitude
+        Double longitude,
+
+        @Pattern(regexp = "LIGHTING|ROAD|TRASH|OTHER", message = "Invalid category")
+                String category
 ) {}

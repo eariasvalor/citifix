@@ -4,6 +4,7 @@ import com.cityfix.citifix.application.port.in.CreateIssueInputPort;
 import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.User;
+import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
 import com.cityfix.citifix.domain.model.valueobject.UserId;
@@ -31,11 +32,21 @@ public class CreateIssueUseCase implements CreateIssueInputPort {
 
         UserId reporterId = new UserId(reporter.getId());
 
+        IssueCategory category = IssueCategory.OTHER;
+        try {
+            if (command.category() != null) {
+                category = IssueCategory.valueOf(command.category().toUpperCase());
+            }
+        } catch (IllegalArgumentException e) {
+            category = IssueCategory.OTHER;
+        }
+
         UrbanIssue issue = new UrbanIssue(
                 null,
                 title,
                 coordinates,
-                reporterId
+                reporterId,
+                category
         );
 
         return issueRepository.save(issue);
