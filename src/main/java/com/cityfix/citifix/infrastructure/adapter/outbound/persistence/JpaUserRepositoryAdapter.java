@@ -32,4 +32,10 @@ public class JpaUserRepositoryAdapter implements UserRepositoryPort {
     public boolean existsByEmail(String email) {
         return springRepository.existsByEmail(email);
     }
+
+    @Override
+    public long count() {
+        return springRepository.count();
+    }
+
 }

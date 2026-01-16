@@ -3,9 +3,14 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     container_name: cityfix-postgres
     ports:
-      - "${POSTGRES_LOCAL_PORT}:5432" # Puerto estándar de Postgres
+      - "${POSTGRES_LOCAL_PORT}:5432"
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -31,6 +36,12 @@ services:
     networks:
       - cityfix-network
     restart: always
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
 volumes:
   postgres_data:
