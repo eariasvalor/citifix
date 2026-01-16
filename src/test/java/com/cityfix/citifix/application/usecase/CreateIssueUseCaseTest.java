@@ -56,7 +56,7 @@ class CreateIssueUseCaseTest {
             );
         });
 
-        Long issueId = createIssueUseCase.execute(command);
+        UrbanIssue issueId = createIssueUseCase.execute(command);
 
         assertThat(issueId).isEqualTo(1L);
 

@@ -22,7 +22,7 @@ public class CreateIssueUseCase implements CreateIssueInputPort {
 
     @Override
     @Transactional
-    public Long execute(CreateIssueCommand command) {
+    public UrbanIssue execute(CreateIssueCommand command) {
         User reporter = userRepository.findByEmail(command.reporterEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Reporter user not found"));
 
@@ -38,7 +38,6 @@ public class CreateIssueUseCase implements CreateIssueInputPort {
                 reporterId
         );
 
-        UrbanIssue savedIssue = issueRepository.save(issue);
-        return savedIssue.getId();
+        return issueRepository.save(issue);
     }
 }

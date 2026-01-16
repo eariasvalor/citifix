@@ -39,7 +39,7 @@ public class IssueController {
     @PostMapping
     @Operation(summary = "Report a new issue")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<Map<String, Long>> reportIssue(
+    public ResponseEntity<IssueResponse> reportIssue(
             @RequestBody @Valid CreateIssueRequest request,
             Principal principal     ) {
                 var command = new CreateIssueCommand(
@@ -48,10 +48,16 @@ public class IssueController {
                 request.longitude(),
                 principal.getName()         );
 
-        Long issueId = createIssueInputPort.execute(command);
+        UrbanIssue issue = createIssueInputPort.execute(command);
+
+        IssueResponse response = new IssueResponse(
+                issue.getId(),
+                issue.getTitle().value(),
+                issue.getStatus().name()
+        );
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("id", issueId));
+                .body(response);
     }
 
     @Operation(summary = "Find nearby issues", description = "Returns a paginated list of issues within a specific radius (in meters).")

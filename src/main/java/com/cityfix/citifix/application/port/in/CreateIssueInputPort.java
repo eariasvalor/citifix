@@ -4,5 +4,5 @@ import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 
 public interface CreateIssueInputPort {
-    Long execute(CreateIssueCommand command);
+    UrbanIssue execute(CreateIssueCommand command);
 }
