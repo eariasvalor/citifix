@@ -2,8 +2,9 @@ package com.cityfix.citifix.application.port.in.command;
 
 public record CreateIssueCommand(
         String title,
+        String description,
         Double latitude,
         Double longitude,
-        String reporterEmail,
-        String category
+        String category,
+        String reporterEmail
 ) {}

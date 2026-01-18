@@ -83,7 +83,7 @@ class IssueControllerTest {
     @Test
     @DisplayName("POST /api/issues - Should report issue and return 201 Created with full response")
     void shouldCreateIssueSuccessfully() throws Exception {
-        CreateIssueRequest request = new CreateIssueRequest("Pothole", 41.5, 2.0, "ROAD");
+        CreateIssueRequest request = new CreateIssueRequest("Pothole", "", 41.5, 2.0, "ROAD");
 
         UrbanIssue mockIssue = UrbanIssue.rehydrate(
                 100L,

@@ -6,6 +6,8 @@ public record CreateIssueRequest(
         @NotBlank(message = "Title is required")
         String title,
 
+        String description,
+
         @NotNull(message = "Latitude is required")
         @Min(-90) @Max(90)
         Double latitude,
