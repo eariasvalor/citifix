@@ -69,7 +69,7 @@ public class IssueController {
     public ResponseEntity<List<IssueResponse>> findNearby(
             @Parameter(description = "Center Latitude", example = "41.3879") @RequestParam("lat") Double lat,
             @Parameter(description = "Center Longitude", example = "2.1699") @RequestParam("lon") Double lon,
-            @Parameter(description = "Radius in meters", example = "500") @RequestParam("radius") Double radius,
+            @Parameter(description = "Radius in meters", example = "5000") @RequestParam("radius") Double radius,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {

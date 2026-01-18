@@ -1,5 +1,6 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence;
 
+import com.cityfix.citifix.TestcontainersConfiguration;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
@@ -18,7 +19,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 
-import javax.swing.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,12 +29,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EntityScan(basePackages = "com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity")
 @TestPropertySource(properties = {
         "spring.jpa.hibernate.ddl-auto=create-drop",
-        "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
-        "spring.datasource.driver-class-name=org.h2.Driver",
-        "spring.datasource.username=sa",
-        "spring.datasource.password="
+        "spring.jpa.defer-datasource-initialization=true"
 })
-@Import({JpaIssueRepositoryAdapter.class, IssueMapper.class})
+@Import({JpaIssueRepositoryAdapter.class, IssueMapper.class, TestcontainersConfiguration.class})
 class JpaIssueRepositoryAdapterTest {
 
     @Autowired
@@ -67,6 +64,27 @@ class JpaIssueRepositoryAdapterTest {
     }
 
     @Test
+    @DisplayName("Should save issue with specific category and persist correctly")
+    void shouldSaveIssueWithCategory() {
+        UrbanIssue issue = new UrbanIssue(
+                null,
+                new IssueTitle("Broken Streetlight"),
+                new Coordinates(41.40, 2.19),
+                new UserId(10L),
+                IssueCategory.LIGHTING
+        );
+
+        UrbanIssue savedIssue = adapter.save(issue);
+
+        assertThat(savedIssue.getId()).isNotNull();
+        assertThat(savedIssue.getCategory()).isEqualTo(IssueCategory.LIGHTING);
+
+        Optional<IssueEntity> inDb = jpaRepository.findById(savedIssue.getId());
+        assertThat(inDb).isPresent();
+        assertThat(inDb.get().getCategory()).isEqualTo(IssueCategory.LIGHTING);
+    }
+
+    @Test
     @DisplayName("Should find nearby issues")
     void shouldFindNearbyIssues() {
         IssueEntity entity1 = IssueEntity.builder()
@@ -74,6 +92,7 @@ class JpaIssueRepositoryAdapterTest {
                 .latitude(40.0).longitude(2.0)
                 .reporterId(1L)
                 .status(IssueStatus.REPORTED)
+                .category(IssueCategory.ROAD)
                 .build();
 
         jpaRepository.save(entity1);
