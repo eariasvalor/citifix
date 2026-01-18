@@ -40,7 +40,7 @@ class CreateIssueUseCaseTest {
     @DisplayName("Should create issue successfully when user exists")
     void shouldCreateIssueWhenUserExists() {
         String email = "citizen@cityfix.com";
-        CreateIssueCommand command = new CreateIssueCommand("Broken Lamp", 41.38, 2.17, email, "LIGHTING");
+        CreateIssueCommand command = new CreateIssueCommand("Broken Lamp", "", 41.38, 2.17, email, "LIGHTING");
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn(99L);
@@ -73,7 +73,7 @@ class CreateIssueUseCaseTest {
     @Test
     @DisplayName("Should throw exception when user not found")
     void shouldThrowWhenUserNotFound() {
-        CreateIssueCommand command = new CreateIssueCommand("Title", 1.0, 1.0, "ghost@cityfix.com", "TRASH");
+        CreateIssueCommand command = new CreateIssueCommand("Title", "", 1.0, 1.0, "ghost@cityfix.com", "TRASH");
         when(userRepository.findByEmail(command.reporterEmail())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> createIssueUseCase.execute(command))

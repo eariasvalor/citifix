@@ -29,16 +29,16 @@ public class CreateIssueUseCase implements CreateIssueInputPort {
 
         IssueTitle title = new IssueTitle(command.title());
         Coordinates coordinates = new Coordinates(command.latitude(), command.longitude());
-
         UserId reporterId = new UserId(reporter.getId());
 
         IssueCategory category = IssueCategory.OTHER;
-        try {
-            if (command.category() != null) {
+
+        if (command.category() != null && !command.category().isBlank()) {
+            try {
                 category = IssueCategory.valueOf(command.category().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                System.out.println("Warning: Invalid category received '" + command.category() + "'. Defaulting to OTHER.");
             }
-        } catch (IllegalArgumentException e) {
-            category = IssueCategory.OTHER;
         }
 
         UrbanIssue issue = new UrbanIssue(

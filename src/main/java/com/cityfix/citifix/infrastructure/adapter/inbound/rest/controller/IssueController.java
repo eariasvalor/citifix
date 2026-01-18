@@ -43,10 +43,11 @@ public class IssueController {
             Principal principal) {
         var command = new CreateIssueCommand(
                 request.title(),
+                request.description(),
                 request.latitude(),
                 request.longitude(),
-                principal.getName(),
-                request.category());
+                request.category(),
+                principal.getName());
 
         UrbanIssue issue = createIssueInputPort.execute(command);
 
@@ -54,7 +55,9 @@ public class IssueController {
                 issue.getId(),
                 issue.getTitle().value(),
                 issue.getStatus().name(),
-                issue.getCategory().name()
+                issue.getCategory().name(),
+                issue.getCoordinates().latitude(),
+                issue.getCoordinates().longitude()
         );
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -79,7 +82,9 @@ public class IssueController {
                         issue.getId(),
                         issue.getTitle().value(),
                         issue.getStatus().name(),
-                        issue.getCategory().name()
+                        issue.getCategory().name(),
+                        issue.getCoordinates().latitude(),
+                        issue.getCoordinates().longitude()
                 ))
                 .toList();
 
