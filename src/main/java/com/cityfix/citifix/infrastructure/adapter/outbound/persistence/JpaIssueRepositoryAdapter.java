@@ -37,7 +37,7 @@ public class JpaIssueRepositoryAdapter implements IssueRepositoryPort {
         int p = (page != null) ? page : 0;
         int s = (size != null) ? size : 10;
 
-        Double radiusInKm = (radiusInMeters != null) ? radiusInMeters / 1000.0 : 0.1;
+        Double radiusInKm = (radiusInMeters != null) ? radiusInMeters / 1000.0 : 5.0;
 
         var entities = repository.findNearby(
                 latitude,

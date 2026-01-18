@@ -32,7 +32,7 @@ public class UrbanIssue {
         this.coordinates = coordinates;
         this.reporterId = reporterId;
         this.status = IssueStatus.REPORTED;
-        this.category = (category != null) ? category : IssueCategory.OTHER;
+        this.category = (issueCategory != null) ? issueCategory : IssueCategory.OTHER;
     }
 
     private UrbanIssue(Long id, IssueTitle title, Coordinates coordinates, UserId reporterId, IssueStatus status, IssueCategory category) {
