@@ -1,5 +1,6 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity;
 
+import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,4 +27,8 @@ public class IssueEntity {
 
     @Enumerated(EnumType.STRING)
     private IssueStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category")
+    private IssueCategory category;
 }

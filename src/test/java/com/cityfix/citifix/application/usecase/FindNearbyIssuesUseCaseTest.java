@@ -2,6 +2,7 @@ package com.cityfix.citifix.application.usecase;
 
 import com.cityfix.citifix.application.port.in.query.FindNearbyIssuesQuery;
 import com.cityfix.citifix.domain.model.UrbanIssue;
+import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
 import com.cityfix.citifix.domain.model.valueobject.UserId;
@@ -33,7 +34,7 @@ class FindNearbyIssuesUseCaseTest {
     void shouldReturnNearbyIssues() {
         var query = new FindNearbyIssuesQuery(41.38, 2.17, 500.0, 0, 10);
 
-        var mockIssue = new UrbanIssue(1L, new IssueTitle("Test"), new Coordinates(41.38, 2.17), new UserId(1L));
+        var mockIssue = new UrbanIssue(1L, new IssueTitle("Test"), new Coordinates(41.38, 2.17), new UserId(1L), IssueCategory.OTHER);
 
         when(repositoryPort.findNearby(41.38, 2.17, 500.0, 0, 10))
                 .thenReturn(List.of(mockIssue));

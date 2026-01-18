@@ -1,5 +1,6 @@
 package com.cityfix.citifix.domain.model;
 
+import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
@@ -19,7 +20,7 @@ class UrbanIssueTest {
         var coords = new Coordinates(41.38, 2.17);
         var reporterId = new UserId(1L);
 
-        UrbanIssue issue = new UrbanIssue(null, title, coords, reporterId);
+        UrbanIssue issue = new UrbanIssue(null, title, coords, reporterId, IssueCategory.LIGHTING);
 
         assertNotNull(issue);
         assertEquals("Broken streetlight", issue.getTitle().value());
@@ -35,19 +36,19 @@ class UrbanIssueTest {
         var reporter = new UserId(1L);
 
         assertThrows(IllegalArgumentException.class,
-                () -> new UrbanIssue(null, null, coords, reporter));
+                () -> new UrbanIssue(null, null, coords, reporter, IssueCategory.OTHER));
 
         assertThrows(IllegalArgumentException.class,
-                () -> new UrbanIssue(null, title, null, reporter));
+                () -> new UrbanIssue(null, title, null, reporter, IssueCategory.OTHER));
 
         assertThrows(IllegalArgumentException.class,
-                () -> new UrbanIssue(null, title, coords, null));
+                () -> new UrbanIssue(null, title, coords, null, IssueCategory.OTHER));
     }
 
     @Test
     @DisplayName("Should update status to IN_PROGRESS")
     void shouldMarkAsInProgress() {
-        var issue = new UrbanIssue(1L, new IssueTitle("Title"), new Coordinates(1.0, 1.0), new UserId(1L));
+        var issue = new UrbanIssue(1L, new IssueTitle("Title"), new Coordinates(1.0, 1.0), new UserId(1L), IssueCategory.OTHER);
 
         issue.markAsInProgress();
 
@@ -57,7 +58,7 @@ class UrbanIssueTest {
     @Test
     @DisplayName("Should update status to RESOLVED")
     void shouldResolveIssue() {
-        var issue = new UrbanIssue(1L, new IssueTitle("Title"), new Coordinates(1.0, 1.0), new UserId(1L));
+        var issue = new UrbanIssue(1L, new IssueTitle("Title"), new Coordinates(1.0, 1.0), new UserId(1L), IssueCategory.OTHER);
         issue.markAsInProgress();
 
         issue.resolve();
@@ -68,7 +69,7 @@ class UrbanIssueTest {
     @Test
     @DisplayName("Should throw exception when resolving a reported issue directly (Strict Workflow)")
     void shouldNotResolveDirectlyFromReported() {
-        var issue = new UrbanIssue(1L, new IssueTitle("Title"), new Coordinates(1.0, 1.0), new UserId(1L));
+        var issue = new UrbanIssue(1L, new IssueTitle("Title"), new Coordinates(1.0, 1.0), new UserId(1L), IssueCategory.OTHER);
 
         assertThrows(IllegalStateException.class, issue::resolve);
     }

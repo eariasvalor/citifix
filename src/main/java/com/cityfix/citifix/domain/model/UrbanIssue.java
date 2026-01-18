@@ -1,5 +1,6 @@
 package com.cityfix.citifix.domain.model;
 
+import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
@@ -12,9 +13,10 @@ public class UrbanIssue {
     private Coordinates coordinates;
     private UserId reporterId;
     private IssueStatus status;
+    private IssueCategory category;
 
 
-    public UrbanIssue(Long id, IssueTitle title, Coordinates coordinates, UserId reporterId) {
+    public UrbanIssue(Long id, IssueTitle title, Coordinates coordinates, UserId reporterId, IssueCategory issueCategory) {
         if (title == null) {
             throw new IllegalArgumentException("Title is mandatory");
         }
@@ -29,20 +31,21 @@ public class UrbanIssue {
         this.title = title;
         this.coordinates = coordinates;
         this.reporterId = reporterId;
-
         this.status = IssueStatus.REPORTED;
+        this.category = (category != null) ? category : IssueCategory.OTHER;
     }
 
-    private UrbanIssue(Long id, IssueTitle title, Coordinates coordinates, UserId reporterId, IssueStatus status) {
+    private UrbanIssue(Long id, IssueTitle title, Coordinates coordinates, UserId reporterId, IssueStatus status, IssueCategory category) {
         this.id = id;
         this.title = title;
         this.coordinates = coordinates;
         this.reporterId = reporterId;
         this.status = status;
+        this.category = category;
     }
 
-    public static UrbanIssue rehydrate(Long id, IssueTitle title, Coordinates coordinates, UserId reporterId, IssueStatus status) {
-        return new UrbanIssue(id, title, coordinates, reporterId, status);
+    public static UrbanIssue rehydrate(Long id, IssueTitle title, Coordinates coordinates, UserId reporterId, IssueStatus status, IssueCategory category) {
+        return new UrbanIssue(id, title, coordinates, reporterId, status, category);
     }
 
     public Long getId() { return id; }
@@ -50,6 +53,8 @@ public class UrbanIssue {
     public Coordinates getCoordinates() { return coordinates; }
     public UserId getReporterId() { return reporterId; }
     public IssueStatus getStatus() { return status; }
+    public IssueCategory getCategory() { return category; }
+
 
     public void setId(Long id) { this.id = id; }
 

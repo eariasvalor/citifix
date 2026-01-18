@@ -19,7 +19,9 @@ public class IssueMapper {
                 .latitude(domain.getCoordinates().latitude())
                 .longitude(domain.getCoordinates().longitude())
                 .reporterId(domain.getReporterId().value())
-                .status(domain.getStatus()).build();
+                .status(domain.getStatus())
+                .category(domain.getCategory())
+                .build();
     }
 
     public UrbanIssue toDomain(IssueEntity entity) {
@@ -30,6 +32,7 @@ public class IssueMapper {
                 new IssueTitle(entity.getTitle()),
                 new Coordinates(entity.getLatitude(), entity.getLongitude()),
                 new UserId(entity.getReporterId()),
-                entity.getStatus());
+                entity.getStatus(),
+                entity.getCategory());
     }
 }

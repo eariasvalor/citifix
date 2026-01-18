@@ -2,6 +2,7 @@ package com.cityfix.citifix.application.usecase;
 
 import com.cityfix.citifix.application.port.in.command.UpdateIssueStatusCommand;
 import com.cityfix.citifix.domain.model.UrbanIssue;
+import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
@@ -36,7 +37,7 @@ class UpdateIssueStatusUseCaseTest {
         Long issueId = 1L;
         var command = new UpdateIssueStatusCommand(issueId, "IN_PROGRESS");
 
-        var issue = new UrbanIssue(issueId, new IssueTitle("Test"), new Coordinates(0.0, 0.0), new UserId(1L));
+        var issue = new UrbanIssue(issueId, new IssueTitle("Test"), new Coordinates(0.0, 0.0), new UserId(1L), IssueCategory.LIGHTING);
 
         when(repositoryPort.findById(issueId)).thenReturn(Optional.of(issue));
 
@@ -61,7 +62,7 @@ class UpdateIssueStatusUseCaseTest {
     void shouldThrowExceptionForInvalidTransition() {
         Long issueId = 1L;
         var command = new UpdateIssueStatusCommand(issueId, "RESOLVED");
-        var issue = new UrbanIssue(issueId, new IssueTitle("Test"), new Coordinates(0.0, 0.0), new UserId(1L));
+        var issue = new UrbanIssue(issueId, new IssueTitle("Test"), new Coordinates(0.0, 0.0), new UserId(1L), IssueCategory.OTHER);
 
         when(repositoryPort.findById(issueId)).thenReturn(Optional.of(issue));
 
