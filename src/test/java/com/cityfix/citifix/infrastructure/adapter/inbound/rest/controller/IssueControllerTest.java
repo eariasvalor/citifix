@@ -5,7 +5,6 @@ import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
 import com.cityfix.citifix.application.port.in.command.UpdateIssueStatusCommand;
 import com.cityfix.citifix.application.port.in.query.FindNearbyIssuesQuery;
 import com.cityfix.citifix.domain.model.UrbanIssue;
-import com.cityfix.citifix.domain.model.User;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
@@ -27,22 +26,18 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.C;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @WebMvcTest(IssueController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -77,13 +72,20 @@ class IssueControllerTest {
 
     @Mock
     private IssueRepositoryPort issueRepository;
+
     @Mock
     private UserRepositoryPort userRepository;
 
     @Test
     @DisplayName("POST /api/issues - Should report issue and return 201 Created with full response")
     void shouldCreateIssueSuccessfully() throws Exception {
-        CreateIssueRequest request = new CreateIssueRequest("Pothole", "", 41.5, 2.0, "ROAD");
+        CreateIssueRequest request = new CreateIssueRequest(
+                "Pothole",
+                "Dangerous hole in the road",
+                41.5,
+                2.0,
+                "ROAD"
+        );
 
         UrbanIssue mockIssue = UrbanIssue.rehydrate(
                 100L,
@@ -99,6 +101,7 @@ class IssueControllerTest {
         mockMvc.perform(post("/api/issues")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
+                        .principal(() -> "citizen@test.com")
                         .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(100))
@@ -123,7 +126,8 @@ class IssueControllerTest {
                         .param("lon", "2.0")
                         .param("radius", "500")
                         .param("page", "0")
-                        .param("size", "10"))
+                        .param("size", "10")
+                        .principal(() -> "user@test.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(2))
                 .andExpect(jsonPath("$[0].title").value("Issue 1"))
@@ -138,10 +142,10 @@ class IssueControllerTest {
         Long issueId = 1L;
         UpdateStatusRequest request = new UpdateStatusRequest("IN_PROGRESS");
 
-
         mockMvc.perform(patch("/api/issues/{id}/status", issueId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .principal(() -> "admin@test.com"))
                 .andExpect(status().isOk());
 
         verify(updateIssueStatusInputPort).execute(any(UpdateIssueStatusCommand.class));

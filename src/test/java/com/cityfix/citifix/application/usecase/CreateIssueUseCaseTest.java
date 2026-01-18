@@ -40,7 +40,7 @@ class CreateIssueUseCaseTest {
     @DisplayName("Should create issue successfully when user exists")
     void shouldCreateIssueWhenUserExists() {
         String email = "citizen@cityfix.com";
-        CreateIssueCommand command = new CreateIssueCommand("Broken Lamp", "", 41.38, 2.17, email, "LIGHTING");
+        CreateIssueCommand command = new CreateIssueCommand("Broken Lamp", "", 41.38, 2.17, "LIGHTING", email);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn(99L);
