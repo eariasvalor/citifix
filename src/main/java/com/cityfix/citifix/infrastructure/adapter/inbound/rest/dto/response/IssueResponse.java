@@ -4,5 +4,7 @@ public record IssueResponse(
         Long id,
         String title,
         String status,
-        String category
+        String category,
+        Double latitude,
+        Double longitude
 ) {}

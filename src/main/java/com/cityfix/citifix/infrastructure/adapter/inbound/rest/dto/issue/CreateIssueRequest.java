@@ -15,5 +15,6 @@ public record CreateIssueRequest(
         Double longitude,
 
         @Pattern(regexp = "LIGHTING|ROAD|TRASH|OTHER", message = "Invalid category")
-                String category
-) {}
+        String category
+) {
+}

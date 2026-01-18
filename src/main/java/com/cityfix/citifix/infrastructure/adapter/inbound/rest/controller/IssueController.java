@@ -54,7 +54,9 @@ public class IssueController {
                 issue.getId(),
                 issue.getTitle().value(),
                 issue.getStatus().name(),
-                issue.getCategory().name()
+                issue.getCategory().name(),
+                issue.getCoordinates().latitude(),
+                issue.getCoordinates().longitude()
         );
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -79,7 +81,9 @@ public class IssueController {
                         issue.getId(),
                         issue.getTitle().value(),
                         issue.getStatus().name(),
-                        issue.getCategory().name()
+                        issue.getCategory().name(),
+                        issue.getCoordinates().latitude(),
+                        issue.getCoordinates().longitude()
                 ))
                 .toList();
 

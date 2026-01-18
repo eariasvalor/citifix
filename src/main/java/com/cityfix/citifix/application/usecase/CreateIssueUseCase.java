@@ -32,7 +32,7 @@ public class CreateIssueUseCase implements CreateIssueInputPort {
 
         UserId reporterId = new UserId(reporter.getId());
 
-        IssueCategory category = IssueCategory.OTHER;
+        IssueCategory category = IssueCategory.valueOf(command.category());
         try {
             if (command.category() != null) {
                 category = IssueCategory.valueOf(command.category().toUpperCase());
