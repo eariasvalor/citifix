@@ -5,21 +5,17 @@ import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
 import com.cityfix.citifix.application.port.in.command.UpdateIssueStatusCommand;
 import com.cityfix.citifix.application.port.in.query.FindNearbyIssuesQuery;
 import com.cityfix.citifix.domain.model.UrbanIssue;
-import com.cityfix.citifix.domain.model.User;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
 import com.cityfix.citifix.domain.model.valueobject.UserId;
-import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
-import com.cityfix.citifix.domain.port.out.UserRepositoryPort;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.issue.CreateIssueRequest;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request.UpdateStatusRequest;
 import com.cityfix.citifix.infrastructure.config.security.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -27,22 +23,17 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.C;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @WebMvcTest(IssueController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -64,6 +55,9 @@ class IssueControllerTest {
     private UpdateIssueStatusInputPort updateIssueStatusInputPort;
 
     @MockBean
+    private UpdateIssueInputPort updateIssueInputPort;
+
+    @MockBean
     private CreateUserInputPort createUserInputPort;
 
     @MockBean
@@ -75,10 +69,6 @@ class IssueControllerTest {
     @MockBean
     private UserDetailsService userDetailsService;
 
-    @Mock
-    private IssueRepositoryPort issueRepository;
-    @Mock
-    private UserRepositoryPort userRepository;
 
     @Test
     @DisplayName("POST /api/issues - Should report issue and return 201 Created with full response")
@@ -141,11 +131,25 @@ class IssueControllerTest {
         Long issueId = 1L;
         UpdateStatusRequest request = new UpdateStatusRequest("IN_PROGRESS");
 
+        UrbanIssue updatedIssue = UrbanIssue.rehydrate(
+                issueId,
+                new IssueTitle("Test Issue"),
+                "Desc",
+                new Coordinates(41.0, 2.0),
+                new UserId(1L),
+                IssueStatus.IN_PROGRESS,
+                IssueCategory.OTHER
+        );
+
+
+        given(updateIssueStatusInputPort.execute(any(UpdateIssueStatusCommand.class)))
+                .willReturn(updatedIssue);
 
         mockMvc.perform(patch("/api/issues/{id}/status", issueId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
 
         verify(updateIssueStatusInputPort).execute(any(UpdateIssueStatusCommand.class));
     }

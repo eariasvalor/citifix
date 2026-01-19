@@ -62,6 +62,28 @@ public class UrbanIssue {
 
     public void setId(Long id) { this.id = id; }
 
+    public void correctDetails(String newTitle, String newDescription, IssueCategory newCategory) {
+        if (newTitle != null && !newTitle.isBlank()) {
+            this.title = new IssueTitle(newTitle);
+        }
+
+        if (newDescription != null) {
+            this.description = newDescription;
+        }
+
+        if (newCategory != null) {
+            this.category = newCategory;
+        }
+    }
+
+
+    public void forceStatusChange(IssueStatus newStatus) {
+        if (newStatus == null) {
+            throw new IllegalArgumentException("Status cannot be null");
+        }
+        this.status = newStatus;
+    }
+
     public void markAsInProgress() {
         if (this.status == IssueStatus.RESOLVED) {
             throw new IllegalStateException("Cannot work on a resolved issue");

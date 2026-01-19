@@ -1,6 +1,6 @@
 package com.cityfix.citifix.infrastructure.adapter.inbound.rest.controller;
 
-import com.cityfix.citifix.application.port.in.query.GetUserProfileInputPort;
+import com.cityfix.citifix.application.port.in.GetUserProfileInputPort;
 import com.cityfix.citifix.domain.model.User;
 import com.cityfix.citifix.infrastructure.config.security.JwtService;
 import org.junit.jupiter.api.DisplayName;

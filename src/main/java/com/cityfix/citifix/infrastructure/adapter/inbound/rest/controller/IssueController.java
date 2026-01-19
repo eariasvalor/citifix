@@ -2,12 +2,15 @@ package com.cityfix.citifix.infrastructure.adapter.inbound.rest.controller;
 
 import com.cityfix.citifix.application.port.in.CreateIssueInputPort;
 import com.cityfix.citifix.application.port.in.FindNearbyIssuesInputPort;
+import com.cityfix.citifix.application.port.in.UpdateIssueInputPort;
 import com.cityfix.citifix.application.port.in.UpdateIssueStatusInputPort;
 import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
+import com.cityfix.citifix.application.port.in.command.UpdateIssueCommand;
 import com.cityfix.citifix.application.port.in.command.UpdateIssueStatusCommand;
 import com.cityfix.citifix.application.port.in.query.FindNearbyIssuesQuery;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.issue.CreateIssueRequest;
+import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.issue.UpdateIssueRequest;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request.UpdateStatusRequest;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.response.IssueResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +37,7 @@ public class IssueController {
     private final CreateIssueInputPort createIssueInputPort;
     private final FindNearbyIssuesInputPort findNearbyIssuesInputPort;
     private final UpdateIssueStatusInputPort updateIssueStatusInputPort;
+    private final UpdateIssueInputPort updateIssueInputPort;
 
     @PostMapping
     @Operation(summary = "Report a new issue")
@@ -55,10 +59,11 @@ public class IssueController {
                 issue.getId(),
                 issue.getTitle().value(),
                 issue.getDescription(),
+                issue.getCoordinates().latitude(),
+                issue.getCoordinates().longitude(),
                 issue.getStatus().name(),
                 issue.getCategory().name(),
-                issue.getCoordinates().latitude(),
-                issue.getCoordinates().longitude()
+                issue.getReporterId().getValue().toString()
         );
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -84,10 +89,11 @@ public class IssueController {
                         issue.getId(),
                         issue.getTitle().value(),
                         issue.getDescription(),
+                        issue.getCoordinates().latitude(),
+                        issue.getCoordinates().longitude(),
                         issue.getStatus().name(),
                         issue.getCategory().name(),
-                        issue.getCoordinates().latitude(),
-                        issue.getCoordinates().longitude()
+                        issue.getReporterId().getValue().toString()
                 ))
                 .toList();
 
@@ -100,14 +106,32 @@ public class IssueController {
             @ApiResponse(responseCode = "422", description = "Business rule violation (e.g. invalid transition)")
     })
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> updateStatus(
+    public ResponseEntity<IssueResponse> updateStatus(
             @PathVariable Long id,
             @RequestBody @Valid UpdateStatusRequest request
     ) {
         var command = new UpdateIssueStatusCommand(id, request.status());
 
-        updateIssueStatusInputPort.execute(command);
+        UrbanIssue updatedIssue = updateIssueStatusInputPort.execute(command);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(IssueResponse.fromDomain(updatedIssue));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<IssueResponse> updateIssue(
+            @PathVariable Long id,
+            @RequestBody @Valid UpdateIssueRequest request
+    ) {
+        var command = new UpdateIssueCommand(
+                id,
+                request.title(),
+                request.description(),
+                request.status(),
+                request.category()
+        );
+
+        UrbanIssue updatedIssue = updateIssueInputPort.execute(command);
+
+        return ResponseEntity.ok(IssueResponse.fromDomain(updatedIssue));
     }
 }

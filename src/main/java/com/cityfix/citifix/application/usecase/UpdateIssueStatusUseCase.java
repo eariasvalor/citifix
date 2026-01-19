@@ -15,7 +15,7 @@ public class UpdateIssueStatusUseCase implements UpdateIssueStatusInputPort {
     private final IssueRepositoryPort repositoryPort;
 
     @Transactional
-    public void execute(UpdateIssueStatusCommand command) {
+    public UrbanIssue execute(UpdateIssueStatusCommand command) {
         UrbanIssue issue = repositoryPort.findById(command.issueId())
                 .orElseThrow(() -> new IllegalArgumentException("Issue not found with ID: " + command.issueId()));
 
@@ -25,6 +25,6 @@ public class UpdateIssueStatusUseCase implements UpdateIssueStatusInputPort {
             default -> throw new IllegalArgumentException("Invalid status action: " + command.newStatus());
         }
 
-        repositoryPort.save(issue);
+        return repositoryPort.save(issue);
     }
 }

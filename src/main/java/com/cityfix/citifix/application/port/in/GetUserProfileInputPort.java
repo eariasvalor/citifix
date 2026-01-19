@@ -1,4 +1,4 @@
-package com.cityfix.citifix.application.port.in.query;
+package com.cityfix.citifix.application.port.in;
 
 import com.cityfix.citifix.domain.model.User;
 
