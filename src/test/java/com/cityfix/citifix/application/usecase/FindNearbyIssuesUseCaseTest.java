@@ -32,9 +32,10 @@ class FindNearbyIssuesUseCaseTest {
     @Test
     @DisplayName("Should return issues within the radius")
     void shouldReturnNearbyIssues() {
+        var description = "this is a sample description";
         var query = new FindNearbyIssuesQuery(41.38, 2.17, 500.0, 0, 10);
 
-        var mockIssue = new UrbanIssue(1L, new IssueTitle("Test"), new Coordinates(41.38, 2.17), new UserId(1L), IssueCategory.OTHER);
+        var mockIssue = new UrbanIssue(1L, new IssueTitle("Test"), description, new Coordinates(41.38, 2.17), new UserId(1L), IssueCategory.OTHER);
 
         when(repositoryPort.findNearby(41.38, 2.17, 500.0, 0, 10))
                 .thenReturn(List.of(mockIssue));

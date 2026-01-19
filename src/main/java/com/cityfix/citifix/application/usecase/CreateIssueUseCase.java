@@ -44,6 +44,7 @@ public class CreateIssueUseCase implements CreateIssueInputPort {
         UrbanIssue issue = new UrbanIssue(
                 null,
                 title,
+                command.description(),
                 coordinates,
                 reporterId,
                 category

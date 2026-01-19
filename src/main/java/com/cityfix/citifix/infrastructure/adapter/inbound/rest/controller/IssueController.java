@@ -54,6 +54,7 @@ public class IssueController {
         IssueResponse response = new IssueResponse(
                 issue.getId(),
                 issue.getTitle().value(),
+                issue.getDescription(),
                 issue.getStatus().name(),
                 issue.getCategory().name(),
                 issue.getCoordinates().latitude(),
@@ -63,6 +64,7 @@ public class IssueController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(response);
     }
+
 
     @Operation(summary = "Find nearby issues", description = "Returns a paginated list of issues within a specific radius (in meters).")
     @GetMapping("/nearby")
@@ -81,6 +83,7 @@ public class IssueController {
                 .map(issue -> new IssueResponse(
                         issue.getId(),
                         issue.getTitle().value(),
+                        issue.getDescription(),
                         issue.getStatus().name(),
                         issue.getCategory().name(),
                         issue.getCoordinates().latitude(),

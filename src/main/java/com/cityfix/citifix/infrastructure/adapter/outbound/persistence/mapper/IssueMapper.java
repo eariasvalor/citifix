@@ -16,6 +16,7 @@ public class IssueMapper {
         return IssueEntity.builder()
                 .id(domain.getId())
                 .title(domain.getTitle().value())
+                .description(domain.getDescription())
                 .latitude(domain.getCoordinates().latitude())
                 .longitude(domain.getCoordinates().longitude())
                 .reporterId(domain.getReporterId().value())
@@ -30,6 +31,7 @@ public class IssueMapper {
         return UrbanIssue.rehydrate(
                 entity.getId(),
                 new IssueTitle(entity.getTitle()),
+                entity.getDescription(),
                 new Coordinates(entity.getLatitude(), entity.getLongitude()),
                 new UserId(entity.getReporterId()),
                 entity.getStatus(),

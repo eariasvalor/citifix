@@ -83,26 +83,29 @@ class IssueControllerTest {
     @Test
     @DisplayName("POST /api/issues - Should report issue and return 201 Created with full response")
     void shouldCreateIssueSuccessfully() throws Exception {
-        CreateIssueRequest request = new CreateIssueRequest("Pothole", "", 41.5, 2.0, "ROAD");
+        CreateIssueRequest request = new CreateIssueRequest("Pothole", "this is a description", 41.5, 2.0, "ROAD");
 
         UrbanIssue mockIssue = UrbanIssue.rehydrate(
                 100L,
                 new IssueTitle("Pothole"),
+                "this is a description",
                 new Coordinates(41.5, 2.0),
                 new UserId(1L),
                 IssueStatus.REPORTED,
                 IssueCategory.ROAD
         );
-
+        Principal mockPrincipal = mock(Principal.class);
         given(createIssueInputPort.execute(any(CreateIssueCommand.class))).willReturn(mockIssue);
 
         mockMvc.perform(post("/api/issues")
+                        .principal(mockPrincipal)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(100))
                 .andExpect(jsonPath("$.title").value("Pothole"))
+                .andExpect(jsonPath("$.description").value("this is a description"))
                 .andExpect(jsonPath("$.category").value("ROAD"))
                 .andExpect(jsonPath("$.status").value("REPORTED"));
     }
@@ -111,9 +114,9 @@ class IssueControllerTest {
     @DisplayName("GET /api/issues/nearby - Should return list of issues")
     void shouldFindNearbyIssues() throws Exception {
         UrbanIssue issue1 = UrbanIssue.rehydrate(
-                1L, new IssueTitle("Issue 1"), new Coordinates(41.0, 2.0), new UserId(1L), IssueStatus.REPORTED, IssueCategory.OTHER);
+                1L, new IssueTitle("Issue 1"), "description", new Coordinates(41.0, 2.0), new UserId(1L), IssueStatus.REPORTED, IssueCategory.OTHER);
         UrbanIssue issue2 = UrbanIssue.rehydrate(
-                2L, new IssueTitle("Issue 2"), new Coordinates(41.01, 2.01), new UserId(2L), IssueStatus.IN_PROGRESS, IssueCategory.OTHER);
+                2L, new IssueTitle("Issue 2"), "description", new Coordinates(41.01, 2.01), new UserId(2L), IssueStatus.IN_PROGRESS, IssueCategory.OTHER);
 
         when(findNearbyIssuesInputPort.execute(any(FindNearbyIssuesQuery.class)))
                 .thenReturn(List.of(issue1, issue2));
