@@ -40,7 +40,7 @@ class CreateIssueUseCaseTest {
     @DisplayName("Should create issue successfully when user exists")
     void shouldCreateIssueWhenUserExists() {
         String email = "citizen@cityfix.com";
-        CreateIssueCommand command = new CreateIssueCommand("Broken Lamp", "", 41.38, 2.17, email, "LIGHTING");
+        CreateIssueCommand command = new CreateIssueCommand("Broken Lamp", "", 41.38, 2.17, "LIGHTING", email);
 
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn(99L);
@@ -50,7 +50,9 @@ class CreateIssueUseCaseTest {
         when(issueRepository.save(any(UrbanIssue.class))).thenAnswer(invocation -> {
             UrbanIssue argument = invocation.getArgument(0);
             return UrbanIssue.rehydrate(
-                    1L, argument.getTitle(),
+                    1L,
+                    argument.getTitle(),
+                    argument.getDescription(),
                     argument.getCoordinates(),
                     argument.getReporterId(),
                     IssueStatus.REPORTED,

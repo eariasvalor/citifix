@@ -41,39 +41,39 @@ EXCEPT SELECT user_id, role FROM user_roles;
 
 -- NOTE: We use subqueries to get the reporter's ID (citizen@cityfix.com)
 -- Table: urban_issues (matches IssueEntity)
--- Fields: title, latitude, longitude, status, category, reporter_id
+-- Fields: title, description, latitude, longitude, status, category, reporter_id
 
 -- Issue 1: REPORTED (Newly created) - Near Sagrada Familia
 -- Category: LIGHTING (Traffic light)
-INSERT INTO urban_issues (title, latitude, longitude, status, category, reporter_id)
-SELECT 'Broken traffic light at Sagrada Familia', 41.4036, 2.1744, 'REPORTED', 'LIGHTING', id
+INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id)
+SELECT 'Broken traffic light at Sagrada Familia', 'The red light is not working correctly, causing confusion at the intersection.', 41.4036, 2.1744, 'REPORTED', 'LIGHTING', id
 FROM users WHERE email = 'citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Broken traffic light at Sagrada Familia');
 
 -- Issue 2: IN_PROGRESS (Under repair) - Plaza Cataluña
 -- Category: ROAD (Pothole)
-INSERT INTO urban_issues (title, latitude, longitude, status, category, reporter_id)
-SELECT 'Dangerous pothole in bike lane', 41.3870, 2.1700, 'IN_PROGRESS', 'ROAD', id
+INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id)
+SELECT 'Dangerous pothole in bike lane', 'Deep hole near the intersection, extremely dangerous for cyclists and scooters.', 41.3870, 2.1700, 'IN_PROGRESS', 'ROAD', id
 FROM users WHERE email = 'citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Dangerous pothole in bike lane');
 
 -- Issue 3: RESOLVED (Fixed) - Park Güell
 -- Category: OTHER (Bench/Furniture)
-INSERT INTO urban_issues (title, latitude, longitude, status, category, reporter_id)
-SELECT 'Broken bench at viewpoint', 41.4145, 2.1527, 'RESOLVED', 'OTHER', id
+INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id)
+SELECT 'Broken bench at viewpoint', 'The wood is rotten and one leg is missing. It needs complete replacement.', 41.4145, 2.1527, 'RESOLVED', 'OTHER', id
 FROM users WHERE email = 'citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Broken bench at viewpoint');
 
 -- Issue 4: REPORTED (Another new one) - Barceloneta Beach
 -- Category: OTHER (Public facility)
-INSERT INTO urban_issues (title, latitude, longitude, status, category, reporter_id)
-SELECT 'Public showers not working', 41.3784, 2.1925, 'REPORTED', 'OTHER', id
+INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id)
+SELECT 'Public showers not working', 'No water comes out when pressing the button on shower #3.', 41.3784, 2.1925, 'REPORTED', 'OTHER', id
 FROM users WHERE email = 'citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Public showers not working');
 
 -- Issue 5: IN_PROGRESS (Active work) - Camp Nou
 -- Category: TRASH (Container)
-INSERT INTO urban_issues (title, latitude, longitude, status, category, reporter_id)
-SELECT 'Burnt trash container', 41.3809, 2.1228, 'IN_PROGRESS', 'TRASH', id
+INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id)
+SELECT 'Burnt trash container', 'Plastic container completely melted on the sidewalk. Cleaning crew needed.', 41.3809, 2.1228, 'IN_PROGRESS', 'TRASH', id
 FROM users WHERE email = 'citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Burnt trash container');

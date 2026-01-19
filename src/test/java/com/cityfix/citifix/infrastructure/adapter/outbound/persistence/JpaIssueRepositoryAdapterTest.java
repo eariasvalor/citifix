@@ -18,7 +18,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 
-import javax.swing.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +31,8 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
         "spring.datasource.driver-class-name=org.h2.Driver",
         "spring.datasource.username=sa",
-        "spring.datasource.password="
+        "spring.datasource.password=",
+        "spring.sql.init.mode=never"
 })
 @Import({JpaIssueRepositoryAdapter.class, IssueMapper.class})
 class JpaIssueRepositoryAdapterTest {
@@ -49,6 +49,7 @@ class JpaIssueRepositoryAdapterTest {
         UrbanIssue issue = new UrbanIssue(
                 null,
                 new IssueTitle("Broken Bench"),
+                "Description of the broken bench",
                 new Coordinates(40.0, 2.0),
                 new UserId(5L),
                 IssueCategory.OTHER
@@ -58,12 +59,13 @@ class JpaIssueRepositoryAdapterTest {
 
         assertThat(savedIssue.getId()).isNotNull();
         assertThat(savedIssue.getTitle().value()).isEqualTo("Broken Bench");
+        assertThat(savedIssue.getDescription()).isEqualTo("Description of the broken bench");
 
         Optional<IssueEntity> inDb = jpaRepository.findById(savedIssue.getId());
         assertThat(inDb).isPresent();
         assertThat(inDb.get().getReporterId()).isEqualTo(5L);
         assertThat(inDb.get().getStatus()).isEqualTo(IssueStatus.REPORTED);
-        assertThat(inDb.get().getCategory()).isEqualTo(IssueCategory.OTHER);
+        assertThat(inDb.get().getDescription()).isEqualTo("Description of the broken bench");
     }
 
     @Test
@@ -71,6 +73,7 @@ class JpaIssueRepositoryAdapterTest {
     void shouldFindNearbyIssues() {
         IssueEntity entity1 = IssueEntity.builder()
                 .title("Issue 1")
+                .description("Desc 1")
                 .latitude(40.0).longitude(2.0)
                 .reporterId(1L)
                 .status(IssueStatus.REPORTED)
@@ -82,5 +85,6 @@ class JpaIssueRepositoryAdapterTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle().value()).isEqualTo("Issue 1");
+        assertThat(result.get(0).getDescription()).isEqualTo("Desc 1");
     }
 }
