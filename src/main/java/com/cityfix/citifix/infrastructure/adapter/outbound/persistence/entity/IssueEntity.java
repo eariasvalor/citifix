@@ -19,6 +19,10 @@ public class IssueEntity {
     private Long id;
 
     private String title;
+
+    @Column(length = 1000)
+    private String description;
+
     private Double latitude;
     private Double longitude;
 

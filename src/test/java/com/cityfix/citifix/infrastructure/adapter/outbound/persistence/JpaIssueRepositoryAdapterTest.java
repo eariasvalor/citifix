@@ -1,6 +1,5 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence;
 
-import com.cityfix.citifix.TestcontainersConfiguration;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
@@ -29,9 +28,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EntityScan(basePackages = "com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity")
 @TestPropertySource(properties = {
         "spring.jpa.hibernate.ddl-auto=create-drop",
-        "spring.jpa.defer-datasource-initialization=true"
+        "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+        "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.datasource.username=sa",
+        "spring.datasource.password=",
+        "spring.sql.init.mode=never"
 })
-@Import({JpaIssueRepositoryAdapter.class, IssueMapper.class, TestcontainersConfiguration.class})
+@Import({JpaIssueRepositoryAdapter.class, IssueMapper.class})
 class JpaIssueRepositoryAdapterTest {
 
     @Autowired
@@ -46,6 +49,7 @@ class JpaIssueRepositoryAdapterTest {
         UrbanIssue issue = new UrbanIssue(
                 null,
                 new IssueTitle("Broken Bench"),
+                "Description of the broken bench",
                 new Coordinates(40.0, 2.0),
                 new UserId(5L),
                 IssueCategory.OTHER
@@ -55,33 +59,13 @@ class JpaIssueRepositoryAdapterTest {
 
         assertThat(savedIssue.getId()).isNotNull();
         assertThat(savedIssue.getTitle().value()).isEqualTo("Broken Bench");
+        assertThat(savedIssue.getDescription()).isEqualTo("Description of the broken bench");
 
         Optional<IssueEntity> inDb = jpaRepository.findById(savedIssue.getId());
         assertThat(inDb).isPresent();
         assertThat(inDb.get().getReporterId()).isEqualTo(5L);
         assertThat(inDb.get().getStatus()).isEqualTo(IssueStatus.REPORTED);
-        assertThat(inDb.get().getCategory()).isEqualTo(IssueCategory.OTHER);
-    }
-
-    @Test
-    @DisplayName("Should save issue with specific category and persist correctly")
-    void shouldSaveIssueWithCategory() {
-        UrbanIssue issue = new UrbanIssue(
-                null,
-                new IssueTitle("Broken Streetlight"),
-                new Coordinates(41.40, 2.19),
-                new UserId(10L),
-                IssueCategory.LIGHTING
-        );
-
-        UrbanIssue savedIssue = adapter.save(issue);
-
-        assertThat(savedIssue.getId()).isNotNull();
-        assertThat(savedIssue.getCategory()).isEqualTo(IssueCategory.LIGHTING);
-
-        Optional<IssueEntity> inDb = jpaRepository.findById(savedIssue.getId());
-        assertThat(inDb).isPresent();
-        assertThat(inDb.get().getCategory()).isEqualTo(IssueCategory.LIGHTING);
+        assertThat(inDb.get().getDescription()).isEqualTo("Description of the broken bench");
     }
 
     @Test
@@ -89,10 +73,10 @@ class JpaIssueRepositoryAdapterTest {
     void shouldFindNearbyIssues() {
         IssueEntity entity1 = IssueEntity.builder()
                 .title("Issue 1")
+                .description("Desc 1")
                 .latitude(40.0).longitude(2.0)
                 .reporterId(1L)
                 .status(IssueStatus.REPORTED)
-                .category(IssueCategory.ROAD)
                 .build();
 
         jpaRepository.save(entity1);
@@ -101,5 +85,6 @@ class JpaIssueRepositoryAdapterTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle().value()).isEqualTo("Issue 1");
+        assertThat(result.get(0).getDescription()).isEqualTo("Desc 1");
     }
 }

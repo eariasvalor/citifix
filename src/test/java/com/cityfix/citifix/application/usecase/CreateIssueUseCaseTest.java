@@ -50,7 +50,9 @@ class CreateIssueUseCaseTest {
         when(issueRepository.save(any(UrbanIssue.class))).thenAnswer(invocation -> {
             UrbanIssue argument = invocation.getArgument(0);
             return UrbanIssue.rehydrate(
-                    1L, argument.getTitle(),
+                    1L,
+                    argument.getTitle(),
+                    argument.getDescription(),
                     argument.getCoordinates(),
                     argument.getReporterId(),
                     IssueStatus.REPORTED,

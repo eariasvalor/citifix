@@ -35,9 +35,10 @@ class UpdateIssueStatusUseCaseTest {
     @DisplayName("Should update status to IN_PROGRESS and save")
     void shouldUpdateStatusToInProgress() {
         Long issueId = 1L;
+        var description = "this is a sample description";
         var command = new UpdateIssueStatusCommand(issueId, "IN_PROGRESS");
 
-        var issue = new UrbanIssue(issueId, new IssueTitle("Test"), new Coordinates(0.0, 0.0), new UserId(1L), IssueCategory.LIGHTING);
+        var issue = new UrbanIssue(issueId, new IssueTitle("Test"), description, new Coordinates(0.0, 0.0), new UserId(1L), IssueCategory.LIGHTING);
 
         when(repositoryPort.findById(issueId)).thenReturn(Optional.of(issue));
 
@@ -61,8 +62,9 @@ class UpdateIssueStatusUseCaseTest {
     @DisplayName("Should throw exception for invalid status transition (Reported -> Resolved)")
     void shouldThrowExceptionForInvalidTransition() {
         Long issueId = 1L;
+        var description = "this is a sample description";
         var command = new UpdateIssueStatusCommand(issueId, "RESOLVED");
-        var issue = new UrbanIssue(issueId, new IssueTitle("Test"), new Coordinates(0.0, 0.0), new UserId(1L), IssueCategory.OTHER);
+        var issue = new UrbanIssue(issueId, new IssueTitle("Test"), description, new Coordinates(0.0, 0.0), new UserId(1L), IssueCategory.OTHER);
 
         when(repositoryPort.findById(issueId)).thenReturn(Optional.of(issue));
 
