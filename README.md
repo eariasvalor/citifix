@@ -14,7 +14,7 @@
 
 ## 🚀 Key Features (Implemented)
 
-* **📍 Geo-Spatial Search:** Find issues nearby a specific location using MySQL native spatial queries (`ST_Distance_Sphere`) with pagination support.
+* **📍 Geo-Spatial Search:** Find issues nearby a specific location using PostgreSQL native spatial queries with pagination support.
 * **🛡️ Rich Domain Model:** Business logic is encapsulated within the Domain layer, ensuring data integrity and invariant protection (no anemic models).
 * **🔄 Strict Workflow:** Finite State Machine implementation for issue lifecycles (`REPORTED` → `IN_PROGRESS` → `RESOLVED`). Prevents illegal status transitions.
 * **🐳 Dockerized Environment:** Full Multi-Stage Docker build for the API and MySQL database configuration.
