@@ -10,5 +10,5 @@ public interface IssueRepositoryPort {
 
     Optional<UrbanIssue> findById(Long id);
 
-    List<UrbanIssue> findNearby(Double latitude, Double longitude, Double radiusInKm, Integer page, Integer size);
+    List<UrbanIssue> findNearby(Double latitude, Double longitude, Double radius, String status, String category, Integer page, Integer size);
 }

@@ -16,7 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,19 +31,44 @@ class FindNearbyIssuesUseCaseTest {
     private FindNearbyIssuesUseCase useCase;
 
     @Test
-    @DisplayName("Should return issues within the radius")
+    @DisplayName("Should return issues within the radius (Legacy behavior)")
     void shouldReturnNearbyIssues() {
-        var description = "this is a sample description";
-        var query = new FindNearbyIssuesQuery(41.38, 2.17, 500.0, 0, 10);
+        var query = new FindNearbyIssuesQuery(41.38, 2.17, null, null, 500.0, 0, 10);
+        var mockIssue = new UrbanIssue(1L, new IssueTitle("Test"), "desc", new Coordinates(41.38, 2.17), new UserId(1L), IssueCategory.OTHER);
 
-        var mockIssue = new UrbanIssue(1L, new IssueTitle("Test"), description, new Coordinates(41.38, 2.17), new UserId(1L), IssueCategory.OTHER);
-
-        when(repositoryPort.findNearby(41.38, 2.17, 500.0, 0, 10))
+        when(repositoryPort.findNearby(anyDouble(), anyDouble(), anyDouble(), isNull(), isNull(), anyInt(), anyInt()))
                 .thenReturn(List.of(mockIssue));
 
         List<UrbanIssue> result = useCase.execute(query);
 
-        assertEquals(1, result.size());
-        verify(repositoryPort).findNearby(41.38, 2.17, 500.0, 0, 10);
+        assertThat(result).hasSize(1);
+
+        verify(repositoryPort).findNearby(
+                eq(41.38),
+                eq(2.17),
+                eq(500.0),
+                isNull(),
+                isNull(),
+                eq(0),
+                eq(10)
+        );
+    }
+
+    @Test
+    @DisplayName("Should propagate status and category filters to repository")
+    void shouldPropagateFilters() {
+        var query = new FindNearbyIssuesQuery(41.0, 2.0, "IN_PROGRESS", "ROAD", 100.0, 0, 10);
+
+        useCase.execute(query);
+
+        verify(repositoryPort).findNearby(
+                eq(41.0),
+                eq(2.0),
+                eq(100.0),
+                eq("IN_PROGRESS"),
+                eq("ROAD"),
+                eq(0),
+                eq(10)
+        );
     }
 }

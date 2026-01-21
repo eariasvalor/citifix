@@ -21,6 +21,8 @@ public class FindNearbyIssuesUseCase implements FindNearbyIssuesInputPort {
                 query.latitude(),
                 query.longitude(),
                 query.radiusInMeters(),
+                query.status(),
+                query.category(),
                 query.page(),
                 query.size()
         );

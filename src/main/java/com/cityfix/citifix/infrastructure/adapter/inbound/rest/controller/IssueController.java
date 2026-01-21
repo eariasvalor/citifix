@@ -1,9 +1,6 @@
 package com.cityfix.citifix.infrastructure.adapter.inbound.rest.controller;
 
-import com.cityfix.citifix.application.port.in.CreateIssueInputPort;
-import com.cityfix.citifix.application.port.in.FindNearbyIssuesInputPort;
-import com.cityfix.citifix.application.port.in.UpdateIssueInputPort;
-import com.cityfix.citifix.application.port.in.UpdateIssueStatusInputPort;
+import com.cityfix.citifix.application.port.in.*;
 import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
 import com.cityfix.citifix.application.port.in.command.UpdateIssueCommand;
 import com.cityfix.citifix.application.port.in.command.UpdateIssueStatusCommand;
@@ -17,8 +14,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,7 +26,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/issues")
 @RequiredArgsConstructor
-@Tag(name = "Urban Issues", description = "Operations related to reporting and managing city issues")
 public class IssueController {
 
     private final CreateIssueInputPort createIssueInputPort;
@@ -40,61 +34,40 @@ public class IssueController {
     private final UpdateIssueInputPort updateIssueInputPort;
 
     @PostMapping
-    @Operation(summary = "Report a new issue")
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<IssueResponse> reportIssue(
-            @RequestBody @Valid CreateIssueRequest request,
-            Principal principal) {
+    public ResponseEntity<IssueResponse> createIssue(@RequestBody @Valid CreateIssueRequest request, Principal principal) {
         var command = new CreateIssueCommand(
                 request.title(),
                 request.description(),
                 request.latitude(),
                 request.longitude(),
                 request.category(),
-                principal.getName());
-
-        UrbanIssue issue = createIssueInputPort.execute(command);
-
-        IssueResponse response = new IssueResponse(
-                issue.getId(),
-                issue.getTitle().value(),
-                issue.getDescription(),
-                issue.getCoordinates().latitude(),
-                issue.getCoordinates().longitude(),
-                issue.getStatus().name(),
-                issue.getCategory().name(),
-                issue.getReporterId().getValue().toString()
+                principal.getName()
         );
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(response);
+        UrbanIssue issue = createIssueInputPort.execute(command);
+        return ResponseEntity.status(HttpStatus.CREATED).body(IssueResponse.fromDomain(issue));
     }
 
-
-    @Operation(summary = "Find nearby issues", description = "Returns a paginated list of issues within a specific radius (in meters).")
+    @Operation(summary = "Find nearby issues", description = "Returns a paginated list of issues within a specific radius (in meters) with optional filters.")
     @GetMapping("/nearby")
     public ResponseEntity<List<IssueResponse>> findNearby(
             @Parameter(description = "Center Latitude", example = "41.3879") @RequestParam("lat") Double lat,
             @Parameter(description = "Center Longitude", example = "2.1699") @RequestParam("lon") Double lon,
-            @Parameter(description = "Radius in meters", example = "5000") @RequestParam("radius") Double radius,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size
+            @Parameter(description = "Radius in meters", example = "5000") @RequestParam(value = "radius", defaultValue = "5000") Double radius,
+            @Parameter(description = "Filter by status") @RequestParam(required = false) String status,
+            @Parameter(description = "Filter by category") @RequestParam(required = false) String category,
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
-        var query = new FindNearbyIssuesQuery(lat, lon, radius, page, size);
+        var query = new FindNearbyIssuesQuery(lat, lon, status, category, radius, page, size);
 
         List<UrbanIssue> issues = findNearbyIssuesInputPort.execute(query);
 
-        List<IssueResponse> response = issues.stream()
-                .map(issue -> new IssueResponse(
-                        issue.getId(),
-                        issue.getTitle().value(),
-                        issue.getDescription(),
-                        issue.getCoordinates().latitude(),
-                        issue.getCoordinates().longitude(),
-                        issue.getStatus().name(),
-                        issue.getCategory().name(),
-                        issue.getReporterId().getValue().toString()
-                ))
+        if (issues == null) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        var response = issues.stream()
+                .map(IssueResponse::fromDomain)
                 .toList();
 
         return ResponseEntity.ok(response);
@@ -117,6 +90,7 @@ public class IssueController {
         return ResponseEntity.ok(IssueResponse.fromDomain(updatedIssue));
     }
 
+    @Operation(summary = "Update issue details", description = "Updates title, description, category or status fully.")
     @PatchMapping("/{id}")
     public ResponseEntity<IssueResponse> updateIssue(
             @PathVariable Long id,

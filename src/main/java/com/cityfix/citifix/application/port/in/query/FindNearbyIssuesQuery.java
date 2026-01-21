@@ -3,6 +3,8 @@ package com.cityfix.citifix.application.port.in.query;
 public record FindNearbyIssuesQuery(
         Double latitude,
         Double longitude,
+        String status,
+        String category,
         Double radiusInMeters,
         Integer page,
         Integer size

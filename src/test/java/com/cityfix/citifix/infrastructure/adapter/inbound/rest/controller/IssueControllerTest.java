@@ -2,6 +2,7 @@ package com.cityfix.citifix.infrastructure.adapter.inbound.rest.controller;
 
 import com.cityfix.citifix.application.port.in.*;
 import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
+import com.cityfix.citifix.application.port.in.command.UpdateIssueCommand;
 import com.cityfix.citifix.application.port.in.command.UpdateIssueStatusCommand;
 import com.cityfix.citifix.application.port.in.query.FindNearbyIssuesQuery;
 import com.cityfix.citifix.domain.model.UrbanIssue;
@@ -11,6 +12,7 @@ import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
 import com.cityfix.citifix.domain.model.valueobject.UserId;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.issue.CreateIssueRequest;
+import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.issue.UpdateIssueRequest;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request.UpdateStatusRequest;
 import com.cityfix.citifix.infrastructure.config.security.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -152,5 +154,49 @@ class IssueControllerTest {
                 .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
 
         verify(updateIssueStatusInputPort).execute(any(UpdateIssueStatusCommand.class));
+    }
+
+    @Test
+    @DisplayName("PATCH /api/issues/{id} - Should update issue details fully")
+    void shouldUpdateIssueDetails() throws Exception {
+        Long issueId = 1L;
+        UpdateIssueRequest request = new UpdateIssueRequest("Updated Title", "Updated Desc", "IN_PROGRESS", "ROAD");
+
+        UrbanIssue updatedIssue = UrbanIssue.rehydrate(
+                issueId, new IssueTitle("Updated Title"), "Updated Desc",
+                new Coordinates(1.0, 1.0), new UserId(1L),
+                IssueStatus.IN_PROGRESS, IssueCategory.ROAD
+        );
+
+        given(updateIssueInputPort.execute(any(UpdateIssueCommand.class))).willReturn(updatedIssue);
+
+        mockMvc.perform(patch("/api/issues/{id}", issueId)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Updated Title"))
+                .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
+    }
+
+    @Test
+    @DisplayName("GET /api/issues/nearby - Should filter by status and category")
+    void shouldFindNearbyIssuesWithFilters() throws Exception {
+        UrbanIssue issue = UrbanIssue.rehydrate(1L, new IssueTitle("Issue"), "Desc", new Coordinates(41.0, 2.0), new UserId(1L), IssueStatus.REPORTED, IssueCategory.ROAD);
+
+        when(findNearbyIssuesInputPort.execute(any(FindNearbyIssuesQuery.class)))
+                .thenReturn(List.of(issue));
+
+        mockMvc.perform(get("/api/issues/nearby")
+                        .param("lat", "41.0")
+                        .param("lon", "2.0")
+                        .param("status", "REPORTED")
+                        .param("category", "ROAD"))
+                .andExpect(status().isOk());
+
+        verify(findNearbyIssuesInputPort).execute(argThat(query ->
+                query.status().equals("REPORTED") &&
+                        query.category().equals("ROAD")
+        ));
     }
 }

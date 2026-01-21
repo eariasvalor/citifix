@@ -1,5 +1,7 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence.repository;
 
+import com.cityfix.citifix.domain.model.enums.IssueCategory;
+import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity.IssueEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,10 +21,15 @@ public interface SpringDataIssueRepository extends JpaRepository<IssueEntity, Lo
                 cos(radians(i.longitude) - radians(:lon)) +
                 sin(radians(:lat)) * sin(radians(i.latitude))
         ))) <= :radius
+        AND (CAST(:status AS VARCHAR) IS NULL OR i.status = CAST(:status AS VARCHAR))
+        AND (CAST(:category AS VARCHAR) IS NULL OR i.category = CAST(:category AS VARCHAR))
         """, nativeQuery = true)
     List<IssueEntity> findNearby(
             @Param("lat") Double lat,
             @Param("lon") Double lon,
-            @Param("radius") Double radiusInKm, Pageable pageable
+            @Param("radius") Double radiusInKm,
+            @Param("status") String status,
+            @Param("category") String category,
+            Pageable pageable
     );
 }
