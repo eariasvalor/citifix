@@ -21,25 +21,15 @@ public interface SpringDataIssueRepository extends JpaRepository<IssueEntity, Lo
                 cos(radians(i.longitude) - radians(:lon)) +
                 sin(radians(:lat)) * sin(radians(i.latitude))
         ))) <= :radius
+        AND (CAST(:status AS VARCHAR) IS NULL OR i.status = CAST(:status AS VARCHAR))
+        AND (CAST(:category AS VARCHAR) IS NULL OR i.category = CAST(:category AS VARCHAR))
         """, nativeQuery = true)
     List<IssueEntity> findNearby(
             @Param("lat") Double lat,
             @Param("lon") Double lon,
-            @Param("radius") Double radiusInKm, Pageable pageable
-    );
-
-    @Query("""
-        SELECT i FROM IssueEntity i 
-        WHERE (6371 * acos(cos(radians(:lat)) * cos(radians(i.latitude)) * cos(radians(i.longitude) - radians(:lon)) + sin(radians(:lat)) * sin(radians(i.latitude)))) < :radius
-        AND (:status IS NULL OR i.status = :status)
-        AND (:category IS NULL OR i.category = :category)
-    """)
-    List<IssueEntity> findNearbyWithFilters(
-            @Param("lat") Double lat,
-            @Param("lon") Double lon,
-            @Param("radius") Double radius,
-            @Param("status") IssueStatus status,
-            @Param("category") IssueCategory category,
+            @Param("radius") Double radiusInKm,
+            @Param("status") String status,
+            @Param("category") String category,
             Pageable pageable
     );
 }

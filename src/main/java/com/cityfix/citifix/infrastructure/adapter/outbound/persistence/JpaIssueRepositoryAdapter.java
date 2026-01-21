@@ -56,12 +56,12 @@ public class JpaIssueRepositoryAdapter implements IssueRepositoryPort {
             }
         }
 
-        var entities = repository.findNearbyWithFilters(
+        var entities = repository.findNearby(
                 latitude,
                 longitude,
                 radiusInKm,
-                statusEnum,
-                categoryEnum,
+                status,
+                category,
                 PageRequest.of(p, s)
         );
 
