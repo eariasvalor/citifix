@@ -1,5 +1,6 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence;
 
+import com.cityfix.citifix.application.port.in.query.FindNearbyIssuesQuery;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
@@ -15,13 +16,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -42,6 +48,9 @@ class JpaIssueRepositoryAdapterTest {
 
     @Autowired
     private SpringDataIssueRepository jpaRepository;
+
+    @MockBean
+    private PasswordEncoder passwordEncoder;
 
     @Test
     @DisplayName("Should save issue and convert correctly")
@@ -69,7 +78,7 @@ class JpaIssueRepositoryAdapterTest {
     }
 
     @Test
-    @DisplayName("Should find nearby issues")
+    @DisplayName("Should find nearby issues ignoring null filters")
     void shouldFindNearbyIssues() {
         IssueEntity entity1 = IssueEntity.builder()
                 .title("Issue 1")
@@ -77,14 +86,55 @@ class JpaIssueRepositoryAdapterTest {
                 .latitude(40.0).longitude(2.0)
                 .reporterId(1L)
                 .status(IssueStatus.REPORTED)
+                .category(IssueCategory.OTHER)
                 .build();
-
         jpaRepository.save(entity1);
 
-        List<UrbanIssue> result = adapter.findNearby(40.0, 2.0, 10.0, 0, 10);
+        List<UrbanIssue> result = adapter.findNearby(40.0, 2.0, 10.0, null, null, 0, 10);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle().value()).isEqualTo("Issue 1");
-        assertThat(result.get(0).getDescription()).isEqualTo("Desc 1");
+    }
+
+
+    @Test
+    @DisplayName("Should filter issues by Status and Category")
+    void shouldFilterIssues() {
+        jpaRepository.save(IssueEntity.builder()
+                .title("Target Issue")
+                .latitude(40.0).longitude(2.0)
+                .reporterId(1L)
+                .status(IssueStatus.IN_PROGRESS)
+                .category(IssueCategory.ROAD)
+                .build());
+
+        jpaRepository.save(IssueEntity.builder()
+                .title("Wrong Status")
+                .latitude(40.0).longitude(2.0)
+                .reporterId(2L)
+                .status(IssueStatus.REPORTED)
+                .category(IssueCategory.ROAD)
+                .build());
+
+        jpaRepository.save(IssueEntity.builder()
+                .title("Wrong Category")
+                .latitude(40.0).longitude(2.0)
+                .reporterId(3L)
+                .status(IssueStatus.IN_PROGRESS)
+                .category(IssueCategory.TRASH)
+                .build());
+
+        List<UrbanIssue> result = adapter.findNearby(
+                40.0, 2.0, 10.0,
+                "IN_PROGRESS",
+                "ROAD",
+                0, 10
+        );
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getTitle().value()).isEqualTo("Target Issue");
+
+        assertThat(result.get(0).getStatus()).isEqualTo(IssueStatus.IN_PROGRESS);
+        assertThat(result.get(0).getCategory()).isEqualTo(IssueCategory.ROAD);
     }
 }

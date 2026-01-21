@@ -1,6 +1,8 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence;
 
 import com.cityfix.citifix.domain.model.UrbanIssue;
+import com.cityfix.citifix.domain.model.enums.IssueCategory;
+import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.mapper.IssueMapper;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.repository.SpringDataIssueRepository;
@@ -33,16 +35,33 @@ public class JpaIssueRepositoryAdapter implements IssueRepositoryPort {
     }
 
     @Override
-    public List<UrbanIssue> findNearby(Double latitude, Double longitude, Double radiusInMeters, Integer page, Integer size) {
+    public List<UrbanIssue> findNearby(Double latitude, Double longitude, Double radiusInMeters, String status, String category, Integer page, Integer size) {
         int p = (page != null) ? page : 0;
         int s = (size != null) ? size : 10;
-
         Double radiusInKm = (radiusInMeters != null) ? radiusInMeters / 1000.0 : 5.0;
 
-        var entities = repository.findNearby(
+        IssueStatus statusEnum = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                statusEnum = IssueStatus.valueOf(status);
+            } catch (IllegalArgumentException e) {
+            }
+        }
+
+        IssueCategory categoryEnum = null;
+        if (category != null && !category.isBlank()) {
+            try {
+                categoryEnum = IssueCategory.valueOf(category);
+            } catch (IllegalArgumentException e) {
+            }
+        }
+
+        var entities = repository.findNearbyWithFilters(
                 latitude,
                 longitude,
                 radiusInKm,
+                statusEnum,
+                categoryEnum,
                 PageRequest.of(p, s)
         );
 
