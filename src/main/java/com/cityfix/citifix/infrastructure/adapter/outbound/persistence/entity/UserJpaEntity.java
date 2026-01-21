@@ -1,5 +1,6 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity;
 
+import com.cityfix.citifix.domain.model.valueobject.UserId;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,7 +34,7 @@ public class UserJpaEntity {
 
     public static UserJpaEntity fromDomain(com.cityfix.citifix.domain.model.User user) {
         return new UserJpaEntity(
-                user.getId(),
+                (user.getId() != null) ? user.getId().value() : null,
                 user.getEmail(),
                 user.getPassword(),
                 user.getRoles()

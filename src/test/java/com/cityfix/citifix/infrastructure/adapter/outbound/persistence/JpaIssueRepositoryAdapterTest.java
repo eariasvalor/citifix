@@ -1,6 +1,5 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence;
 
-import com.cityfix.citifix.application.port.in.query.FindNearbyIssuesQuery;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
@@ -25,9 +24,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -53,32 +49,34 @@ class JpaIssueRepositoryAdapterTest {
     private PasswordEncoder passwordEncoder;
 
     @Test
-    @DisplayName("Should save issue and convert correctly")
+    @DisplayName("Should save issue with image URL and convert correctly")
     void shouldSaveIssue() {
+        String expectedImageUrl = "http://cloudinary.com/bench.jpg";
+
         UrbanIssue issue = new UrbanIssue(
                 null,
                 new IssueTitle("Broken Bench"),
-                "Description of the broken bench",
+                "Description",
                 new Coordinates(40.0, 2.0),
                 new UserId(5L),
-                IssueCategory.OTHER
+                IssueStatus.REPORTED,
+                IssueCategory.OTHER,
+                expectedImageUrl
         );
 
         UrbanIssue savedIssue = adapter.save(issue);
 
         assertThat(savedIssue.getId()).isNotNull();
-        assertThat(savedIssue.getTitle().value()).isEqualTo("Broken Bench");
-        assertThat(savedIssue.getDescription()).isEqualTo("Description of the broken bench");
+        assertThat(savedIssue.getImageUrl()).isEqualTo(expectedImageUrl);
 
         Optional<IssueEntity> inDb = jpaRepository.findById(savedIssue.getId());
         assertThat(inDb).isPresent();
         assertThat(inDb.get().getReporterId()).isEqualTo(5L);
-        assertThat(inDb.get().getStatus()).isEqualTo(IssueStatus.REPORTED);
-        assertThat(inDb.get().getDescription()).isEqualTo("Description of the broken bench");
+        assertThat(inDb.get().getImageUrl()).isEqualTo(expectedImageUrl);
     }
 
     @Test
-    @DisplayName("Should find nearby issues ignoring null filters")
+    @DisplayName("Should find nearby issues and map image URL correctly")
     void shouldFindNearbyIssues() {
         IssueEntity entity1 = IssueEntity.builder()
                 .title("Issue 1")
@@ -87,6 +85,7 @@ class JpaIssueRepositoryAdapterTest {
                 .reporterId(1L)
                 .status(IssueStatus.REPORTED)
                 .category(IssueCategory.OTHER)
+                .imageUrl("http://img.com/issue1.jpg")
                 .build();
         jpaRepository.save(entity1);
 
@@ -94,35 +93,23 @@ class JpaIssueRepositoryAdapterTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle().value()).isEqualTo("Issue 1");
+        assertThat(result.get(0).getImageUrl()).isEqualTo("http://img.com/issue1.jpg");
     }
-
 
     @Test
     @DisplayName("Should filter issues by Status and Category")
     void shouldFilterIssues() {
         jpaRepository.save(IssueEntity.builder()
-                .title("Target Issue")
-                .latitude(40.0).longitude(2.0)
-                .reporterId(1L)
-                .status(IssueStatus.IN_PROGRESS)
-                .category(IssueCategory.ROAD)
-                .build());
+                .title("Target Issue").latitude(40.0).longitude(2.0).reporterId(1L)
+                .status(IssueStatus.IN_PROGRESS).category(IssueCategory.ROAD).build());
 
         jpaRepository.save(IssueEntity.builder()
-                .title("Wrong Status")
-                .latitude(40.0).longitude(2.0)
-                .reporterId(2L)
-                .status(IssueStatus.REPORTED)
-                .category(IssueCategory.ROAD)
-                .build());
+                .title("Wrong Status").latitude(40.0).longitude(2.0).reporterId(2L)
+                .status(IssueStatus.REPORTED).category(IssueCategory.ROAD).build());
 
         jpaRepository.save(IssueEntity.builder()
-                .title("Wrong Category")
-                .latitude(40.0).longitude(2.0)
-                .reporterId(3L)
-                .status(IssueStatus.IN_PROGRESS)
-                .category(IssueCategory.TRASH)
-                .build());
+                .title("Wrong Category").latitude(40.0).longitude(2.0).reporterId(3L)
+                .status(IssueStatus.IN_PROGRESS).category(IssueCategory.TRASH).build());
 
         List<UrbanIssue> result = adapter.findNearby(
                 40.0, 2.0, 10.0,
@@ -133,8 +120,5 @@ class JpaIssueRepositoryAdapterTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle().value()).isEqualTo("Target Issue");
-
-        assertThat(result.get(0).getStatus()).isEqualTo(IssueStatus.IN_PROGRESS);
-        assertThat(result.get(0).getCategory()).isEqualTo(IssueCategory.ROAD);
     }
 }

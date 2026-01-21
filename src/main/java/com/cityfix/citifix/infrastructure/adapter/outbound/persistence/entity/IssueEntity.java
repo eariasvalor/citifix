@@ -35,4 +35,7 @@ public class IssueEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "category")
     private IssueCategory category;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 }

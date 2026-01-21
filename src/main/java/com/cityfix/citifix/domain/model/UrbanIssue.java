@@ -15,9 +15,19 @@ public class UrbanIssue {
     private UserId reporterId;
     private IssueStatus status;
     private IssueCategory category;
+    private String imageUrl;
 
 
-    public UrbanIssue(Long id, IssueTitle title, String description, Coordinates coordinates, UserId reporterId, IssueCategory issueCategory) {
+    public UrbanIssue(
+            Long id,
+            IssueTitle title,
+            String description,
+            Coordinates coordinates,
+            UserId reporterId,
+            IssueStatus status,
+            IssueCategory category,
+            String imageUrl
+    ) {
         if (title == null) {
             throw new IllegalArgumentException("Title is mandatory");
         }
@@ -32,9 +42,14 @@ public class UrbanIssue {
         this.title = title;
         this.description = description;
         this.coordinates = coordinates;
+        this.status = status;
+        this.category = category;
         this.reporterId = reporterId;
-        this.status = IssueStatus.REPORTED;
-        this.category = (issueCategory != null) ? issueCategory : IssueCategory.OTHER;
+        this.imageUrl = imageUrl;
+    }
+
+    public UrbanIssue(Long id, IssueTitle title, String description, Coordinates coordinates, UserId reporterId, IssueCategory issueCategory) {
+        this(id, title, description, coordinates, reporterId, IssueStatus.REPORTED, issueCategory, null);
     }
 
     private UrbanIssue(Long id, IssueTitle title, String description, Coordinates coordinates, UserId reporterId, IssueStatus status, IssueCategory category) {
@@ -47,20 +62,65 @@ public class UrbanIssue {
         this.category = category;
     }
 
-    public static UrbanIssue rehydrate(Long id, IssueTitle title, String description, Coordinates coordinates, UserId reporterId, IssueStatus status, IssueCategory category) {
-        return new UrbanIssue(id, title, description, coordinates, reporterId, status, category);
+    public static UrbanIssue rehydrate(
+            Long id,
+            IssueTitle title,
+            String description,
+            Coordinates coordinates,
+            UserId reporterId,
+            IssueStatus status,
+            IssueCategory category,
+            String imageUrl
+    ) {
+        return new UrbanIssue(
+                id,
+                title,
+                description,
+                coordinates,
+                reporterId,
+                status,
+                category,
+                imageUrl
+        );
     }
 
-    public Long getId() { return id; }
-    public IssueTitle getTitle() { return title; }
-    public String getDescription() {return description;}
-    public Coordinates getCoordinates() { return coordinates; }
-    public UserId getReporterId() { return reporterId; }
-    public IssueStatus getStatus() { return status; }
-    public IssueCategory getCategory() { return category; }
+
+    public Long getId() {
+        return id;
+    }
+
+    public IssueTitle getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Coordinates getCoordinates() {
+        return coordinates;
+    }
+
+    public UserId getReporterId() {
+        return reporterId;
+    }
+
+    public IssueStatus getStatus() {
+        return status;
+    }
+
+    public IssueCategory getCategory() {
+        return category;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
 
 
-    public void setId(Long id) { this.id = id; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public void correctDetails(String newTitle, String newDescription, IssueCategory newCategory) {
         if (newTitle != null && !newTitle.isBlank()) {

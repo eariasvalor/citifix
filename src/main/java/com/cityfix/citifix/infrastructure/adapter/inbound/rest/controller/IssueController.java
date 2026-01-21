@@ -17,8 +17,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.List;
@@ -33,8 +35,13 @@ public class IssueController {
     private final UpdateIssueStatusInputPort updateIssueStatusInputPort;
     private final UpdateIssueInputPort updateIssueInputPort;
 
-    @PostMapping
-    public ResponseEntity<IssueResponse> createIssue(@RequestBody @Valid CreateIssueRequest request, Principal principal) {
+    @Operation(summary = "Create a new issue", description = "Report an issue with an optional image.")
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<IssueResponse> createIssue(
+            @RequestPart("data") @Valid CreateIssueRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            Principal principal
+    ) {
         var command = new CreateIssueCommand(
                 request.title(),
                 request.description(),
@@ -43,7 +50,7 @@ public class IssueController {
                 request.category(),
                 principal.getName()
         );
-        UrbanIssue issue = createIssueInputPort.execute(command);
+        UrbanIssue issue = createIssueInputPort.execute(command, image);
         return ResponseEntity.status(HttpStatus.CREATED).body(IssueResponse.fromDomain(issue));
     }
 

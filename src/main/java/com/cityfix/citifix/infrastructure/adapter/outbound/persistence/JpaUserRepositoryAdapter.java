@@ -1,6 +1,7 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence;
 
 import com.cityfix.citifix.domain.model.User;
+import com.cityfix.citifix.domain.model.valueobject.UserId;
 import com.cityfix.citifix.domain.port.out.UserRepositoryPort;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity.UserJpaEntity;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.repository.SpringDataUserRepository;
@@ -36,6 +37,12 @@ public class JpaUserRepositoryAdapter implements UserRepositoryPort {
     @Override
     public long count() {
         return springRepository.count();
+    }
+
+    @Override
+    public Optional<User> findById(UserId id) {
+        return springRepository.findById(id.value())
+                .map(UserJpaEntity::toDomain);
     }
 
 }
