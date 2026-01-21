@@ -42,7 +42,8 @@ class UpdateIssueUseCaseTest {
                 new Coordinates(1.0, 1.0),
                 new UserId(10L),
                 IssueStatus.REPORTED,
-                IssueCategory.OTHER
+                IssueCategory.OTHER,
+                null
         );
 
         UpdateIssueCommand command = new UpdateIssueCommand(
@@ -90,7 +91,8 @@ class UpdateIssueUseCaseTest {
                 new Coordinates(1.0, 1.0),
                 new UserId(10L),
                 IssueStatus.REPORTED,
-                IssueCategory.OTHER
+                IssueCategory.OTHER,
+                null
         );
 
         UpdateIssueCommand command = new UpdateIssueCommand(

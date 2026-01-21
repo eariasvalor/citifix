@@ -38,7 +38,16 @@ class UpdateIssueStatusUseCaseTest {
         var description = "this is a sample description";
         var command = new UpdateIssueStatusCommand(issueId, "IN_PROGRESS");
 
-        var issue = new UrbanIssue(issueId, new IssueTitle("Test"), description, new Coordinates(0.0, 0.0), new UserId(1L), IssueCategory.LIGHTING);
+        var issue = new UrbanIssue(
+                issueId,
+                new IssueTitle("Test"),
+                description,
+                new Coordinates(0.0, 0.0),
+                new UserId(1L),
+                IssueStatus.REPORTED,
+                IssueCategory.LIGHTING,
+                null
+        );
 
         when(repositoryPort.findById(issueId)).thenReturn(Optional.of(issue));
 
@@ -64,7 +73,17 @@ class UpdateIssueStatusUseCaseTest {
         Long issueId = 1L;
         var description = "this is a sample description";
         var command = new UpdateIssueStatusCommand(issueId, "RESOLVED");
-        var issue = new UrbanIssue(issueId, new IssueTitle("Test"), description, new Coordinates(0.0, 0.0), new UserId(1L), IssueCategory.OTHER);
+
+        var issue = new UrbanIssue(
+                issueId,
+                new IssueTitle("Test"),
+                description,
+                new Coordinates(0.0, 0.0),
+                new UserId(1L),
+                IssueStatus.REPORTED,
+                IssueCategory.OTHER,
+                null
+        );
 
         when(repositoryPort.findById(issueId)).thenReturn(Optional.of(issue));
 

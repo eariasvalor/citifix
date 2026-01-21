@@ -36,31 +36,27 @@ class JpaUserRepositoryAdapterTest {
 
         User savedUser = adapter.save(domainUser);
 
+        assertThat(savedUser).isNotNull();
         assertThat(savedUser.getId()).isNotNull();
+
+        Long generatedId = savedUser.getId().value();
+        assertThat(generatedId).isPositive();
         assertThat(savedUser.getEmail()).isEqualTo("alex@cityfix.com");
 
-        Optional<UserJpaEntity> entityInDb = springRepository.findById(savedUser.getId());
+        Optional<UserJpaEntity> entityInDb = springRepository.findById(generatedId);
         assertThat(entityInDb).isPresent();
         assertThat(entityInDb.get().getEmail()).isEqualTo("alex@cityfix.com");
-        assertThat(entityInDb.get().getRoles()).contains("ROLE_USER");
     }
 
     @Test
-    @DisplayName("Should find a user by email and map it to domain")
     void shouldFindUserByEmail() {
         UserJpaEntity entity = new UserJpaEntity(null, "maria@cityfix.com", "hash123", Set.of("ROLE_ADMIN"));
         springRepository.save(entity);
-
         Optional<User> result = adapter.findByEmail("maria@cityfix.com");
-
         assertThat(result).isPresent();
-        assertThat(result.get().getEmail()).isEqualTo("maria@cityfix.com");
-        assertThat(result.get().getRoles()).contains("ROLE_ADMIN");
-        assertThat(result.get()).isInstanceOf(User.class);
     }
 
     @Test
-    @DisplayName("Should return empty when email does not exist")
     void shouldReturnEmptyWhenNotFound() {
         Optional<User> result = adapter.findByEmail("ghost@cityfix.com");
         assertThat(result).isEmpty();

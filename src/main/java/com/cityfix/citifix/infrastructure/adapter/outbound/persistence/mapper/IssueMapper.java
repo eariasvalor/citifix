@@ -22,6 +22,7 @@ public class IssueMapper {
                 .reporterId(domain.getReporterId().value())
                 .status(domain.getStatus())
                 .category(domain.getCategory())
+                .imageUrl(domain.getImageUrl())
                 .build();
     }
 
@@ -35,6 +36,8 @@ public class IssueMapper {
                 new Coordinates(entity.getLatitude(), entity.getLongitude()),
                 new UserId(entity.getReporterId()),
                 entity.getStatus(),
-                entity.getCategory());
+                entity.getCategory(),
+                entity.getImageUrl()
+        );
     }
 }

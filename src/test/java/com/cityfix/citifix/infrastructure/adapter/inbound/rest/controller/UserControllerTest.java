@@ -2,6 +2,7 @@ package com.cityfix.citifix.infrastructure.adapter.inbound.rest.controller;
 
 import com.cityfix.citifix.application.port.in.GetUserProfileInputPort;
 import com.cityfix.citifix.domain.model.User;
+import com.cityfix.citifix.domain.model.valueobject.UserId;
 import com.cityfix.citifix.infrastructure.config.security.JwtService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,12 +42,13 @@ class UserControllerTest {
     @DisplayName("Should return 200 and user profile when authenticated")
     void shouldReturnUserProfile() throws Exception {
         String email = "alex@cityfix.com";
-        User domainUser = User.create(email, "hashed_pass", Set.of("ROLE_USER"));
+        User domainUser = new User(new UserId(1L), email, "hashed_pass", Set.of("ROLE_USER"));
 
         given(getUserProfileInputPort.execute(email)).willReturn(domainUser);
 
         mockMvc.perform(get("/api/users/me")
-                        .principal(() -> email).contentType(MediaType.APPLICATION_JSON))
+                        .principal(() -> email)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(email))
                 .andExpect(jsonPath("$.roles[0]").value("ROLE_USER"))
