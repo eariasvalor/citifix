@@ -23,6 +23,7 @@ public class IssueMapper {
                 .status(domain.getStatus())
                 .category(domain.getCategory())
                 .imageUrl(domain.getImageUrl())
+                .createdAt(domain.getCreatedAt())
                 .build();
     }
 
@@ -37,7 +38,8 @@ public class IssueMapper {
                 new UserId(entity.getReporterId()),
                 entity.getStatus(),
                 entity.getCategory(),
-                entity.getImageUrl()
+                entity.getImageUrl(),
+                entity.getCreatedAt()
         );
     }
 }

@@ -30,6 +30,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -149,28 +150,35 @@ class IssueControllerTest {
     @Test
     @DisplayName("PATCH /api/issues/{id} - Should update issue details fully")
     void shouldUpdateIssueDetails() throws Exception {
-        Long issueId = 1L;
-        UpdateIssueRequest request = new UpdateIssueRequest("Updated Title", "Updated Desc", "IN_PROGRESS", "ROAD");
+        String newTitleStr = "New Title";
+        UpdateIssueRequest request = new UpdateIssueRequest(newTitleStr, "Desc", "IN_PROGRESS", "ROAD");
 
-        UrbanIssue updatedIssue = UrbanIssue.rehydrate(
-                issueId,
-                new IssueTitle("Updated Title"),
-                "Updated Desc",
-                new Coordinates(1.0, 1.0),
+        UrbanIssue mockIssue = new UrbanIssue(
+                1L,
+                new IssueTitle(newTitleStr),
+                "Desc",
+                new Coordinates(0.0, 0.0),
                 new UserId(1L),
                 IssueStatus.IN_PROGRESS,
                 IssueCategory.ROAD,
-                null
+                null,
+                LocalDateTime.now()
         );
 
-        given(updateIssueInputPort.execute(any(UpdateIssueCommand.class))).willReturn(updatedIssue);
+        given(updateIssueInputPort.execute(any(UpdateIssueCommand.class))).willReturn(mockIssue);
 
-        mockMvc.perform(patch("/api/issues/{id}", issueId)
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        MockMultipartFile dataPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                objectMapper.writeValueAsBytes(request)
+        );
+
+        mockMvc.perform(multipart("/api/issues/{id}", 1L)
+                        .file(dataPart)
+                        .with(req -> { req.setMethod("PATCH"); return req; }))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Updated Title"));
+                .andExpect(jsonPath("$.title").value(newTitleStr));
     }
 
     @Test
@@ -208,5 +216,19 @@ class IssueControllerTest {
                 .andExpect(jsonPath("$.message").value("Issue deleted successfully"));;
 
         verify(deleteIssueInputPort).execute(issueId, adminEmail);
+    }
+
+    private UrbanIssue createMockIssue(Long id, IssueStatus status) {
+        return new UrbanIssue(
+                id,
+                new IssueTitle("Test Title"),
+                "Description",
+                new Coordinates(0.0, 0.0),
+                new UserId(1L),
+                status,
+                IssueCategory.OTHER,
+                null,
+                LocalDateTime.now()
+        );
     }
 }

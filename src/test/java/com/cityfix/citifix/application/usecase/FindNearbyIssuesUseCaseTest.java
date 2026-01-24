@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,7 +42,8 @@ class FindNearbyIssuesUseCaseTest {
                 new UserId(1L),
                 IssueStatus.REPORTED,
                 IssueCategory.OTHER,
-                null
+                null,
+                LocalDateTime.now()
         );
 
         when(repositoryPort.findNearby(anyDouble(), anyDouble(), anyDouble(), isNull(), isNull(), anyInt(), anyInt()))

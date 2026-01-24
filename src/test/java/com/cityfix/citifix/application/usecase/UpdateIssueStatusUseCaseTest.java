@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,27 +35,17 @@ class UpdateIssueStatusUseCaseTest {
     @Test
     @DisplayName("Should update status to IN_PROGRESS and save")
     void shouldUpdateStatusToInProgress() {
-        Long issueId = 1L;
-        var description = "this is a sample description";
-        var command = new UpdateIssueStatusCommand(issueId, "IN_PROGRESS");
+            Long issueId = 1L;
+            var command = new UpdateIssueStatusCommand(issueId, "IN_PROGRESS");
+            var issue = createMockIssue(issueId, IssueStatus.REPORTED); // Método helper
 
-        var issue = new UrbanIssue(
-                issueId,
-                new IssueTitle("Test"),
-                description,
-                new Coordinates(0.0, 0.0),
-                new UserId(1L),
-                IssueStatus.REPORTED,
-                IssueCategory.LIGHTING,
-                null
-        );
+            when(repositoryPort.findById(issueId)).thenReturn(Optional.of(issue));
+            when(repositoryPort.save(any(UrbanIssue.class))).thenAnswer(i -> i.getArgument(0));
 
-        when(repositoryPort.findById(issueId)).thenReturn(Optional.of(issue));
+            UrbanIssue result = useCase.execute(command);
 
-        useCase.execute(command);
-
-        assertEquals(IssueStatus.IN_PROGRESS, issue.getStatus());
-        verify(repositoryPort).save(issue);
+            assertEquals(IssueStatus.IN_PROGRESS, result.getStatus());
+            verify(repositoryPort).save(argThat(u -> u.getStatus() == IssueStatus.IN_PROGRESS));
     }
 
     @Test
@@ -82,7 +73,8 @@ class UpdateIssueStatusUseCaseTest {
                 new UserId(1L),
                 IssueStatus.REPORTED,
                 IssueCategory.OTHER,
-                null
+                null,
+                LocalDateTime.now()
         );
 
         when(repositoryPort.findById(issueId)).thenReturn(Optional.of(issue));
@@ -90,5 +82,19 @@ class UpdateIssueStatusUseCaseTest {
         assertThrows(IllegalStateException.class, () -> useCase.execute(command));
 
         verify(repositoryPort, never()).save(any());
+    }
+
+    private UrbanIssue createMockIssue(Long id, IssueStatus status) {
+        return new UrbanIssue(
+                id,
+                new IssueTitle("Test Title"),
+                "Description",
+                new Coordinates(0.0, 0.0),
+                new UserId(1L),
+                status,
+                IssueCategory.OTHER,
+                null,
+                LocalDateTime.now()
+        );
     }
 }

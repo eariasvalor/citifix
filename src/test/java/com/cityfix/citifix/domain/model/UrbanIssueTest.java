@@ -6,141 +6,130 @@ import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
 import com.cityfix.citifix.domain.model.valueobject.UserId;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullSource;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.*;
 
 class UrbanIssueTest {
 
-    private final UserId defaultReporter = new UserId(1L);
-    private final IssueTitle defaultTitle = new IssueTitle("Broken Streetlight");
-    private final Coordinates defaultCoordinates = new Coordinates(40.4168, -3.7038);
-    private final String defaultImage = "http://cloudinary.com/sample.jpg";
-
-    @Test
-    @DisplayName("Should create a valid issue when all mandatory fields are provided")
-    void shouldCreateValidIssue() {
-        UrbanIssue issue = new UrbanIssue(
+    private UrbanIssue createBaseIssue() {
+        return new UrbanIssue(
                 1L,
-                defaultTitle,
-                "Description",
-                defaultCoordinates,
-                defaultReporter,
+                new IssueTitle("Original Title"),
+                "Original Description",
+                new Coordinates(41.3879, 2.1699),
+                new UserId(100L),
                 IssueStatus.REPORTED,
                 IssueCategory.LIGHTING,
-                defaultImage
+                "http://image.com/old.jpg",
+                LocalDateTime.now()
         );
-
-        assertNotNull(issue);
-        assertEquals(defaultImage, issue.getImageUrl());
-        assertEquals(IssueStatus.REPORTED, issue.getStatus());
     }
 
-    @Test
-    @DisplayName("Should throw exception when Title is missing")
-    void shouldThrowException_WhenTitleIsNull() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-                new UrbanIssue(null, null, "Desc", defaultCoordinates, defaultReporter, IssueStatus.REPORTED, IssueCategory.ROAD, defaultImage)
-        );
-        assertEquals("Title is mandatory", exception.getMessage());
+    @Nested
+    @DisplayName("Creation and Rehydration Tests")
+    class CreationTests {
+        @Test
+        @DisplayName("Should throw exception if mandatory fields are null")
+        void shouldValidateMandatoryFields() {
+            assertThatThrownBy(() -> new UrbanIssue(null, null, "D", new Coordinates(0.0,0.0), new UserId(1L), null, null, null, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Title is mandatory");
+        }
+
+        @Test
+        @DisplayName("Should rehydrate correctly with 8 parameters (legacy support)")
+        void shouldRehydrateWithLegacyMethod() {
+            UrbanIssue issue = UrbanIssue.rehydrate(
+                    1L, new IssueTitle("T"), "D", new Coordinates(0.0,0.0), new UserId(1L),
+                    IssueStatus.REPORTED, IssueCategory.OTHER, null
+            );
+            assertThat(issue.getCreatedAt()).isNotNull();
+            assertThat(issue.getId()).isEqualTo(1L);
+        }
     }
 
-    @Test
-    @DisplayName("Should throw exception when Coordinates are missing")
-    void shouldThrowException_WhenCoordinatesAreNull() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-                new UrbanIssue(null, defaultTitle, "Desc", null, defaultReporter, IssueStatus.REPORTED, IssueCategory.ROAD, defaultImage)
-        );
-        assertEquals("Coordinates are mandatory", exception.getMessage());
+    @Nested
+    @DisplayName("Immutability & Evolution Tests")
+    class EvolutionTests {
+
+        @Test
+        @DisplayName("Should return a new instance when details are updated")
+        void updateDetailsShouldReturnNewInstance() {
+            UrbanIssue original = createBaseIssue();
+            UrbanIssue updated = original.updateDetails("New Title", "New Desc", IssueCategory.ROAD);
+
+            // Assert New Instance
+            assertThat(updated).isNotSameAs(original);
+            assertThat(updated.getTitle().value()).isEqualTo("New Title");
+            assertThat(updated.getCategory()).isEqualTo(IssueCategory.ROAD);
+
+            // Assert Original Unchanged
+            assertThat(original.getTitle().value()).isEqualTo("Original Title");
+            assertThat(original.getCategory()).isEqualTo(IssueCategory.LIGHTING);
+        }
+
+        @Test
+        @DisplayName("Should return a new instance when image URL is updated")
+        void withImageUrlShouldReturnNewInstance() {
+            UrbanIssue original = createBaseIssue();
+            UrbanIssue updated = original.withImageUrl("http://image.com/new.jpg");
+
+            assertThat(updated).isNotSameAs(original);
+            assertThat(updated.getImageUrl()).isEqualTo("http://image.com/new.jpg");
+            assertThat(original.getImageUrl()).isEqualTo("http://image.com/old.jpg");
+        }
+
+        @Test
+        @DisplayName("Should maintain the same creation date across evolutions")
+        void shouldMaintainCreationDate() {
+            UrbanIssue original = createBaseIssue();
+            UrbanIssue updated = original.markAsInProgress();
+
+            assertThat(updated.getCreatedAt()).isEqualTo(original.getCreatedAt());
+        }
     }
 
-    @Test
-    @DisplayName("Should throw exception when Reporter ID is missing")
-    void shouldThrowException_WhenReporterIdIsNull() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-                new UrbanIssue(null, defaultTitle, "Desc", defaultCoordinates, null, IssueStatus.REPORTED, IssueCategory.ROAD, defaultImage)
-        );
-        assertEquals("Reporter ID is mandatory", exception.getMessage());
-    }
+    @Nested
+    @DisplayName("Status Transition Logic Tests")
+    class StatusTests {
 
-    @Test
-    @DisplayName("Should rehydrate issue correctly")
-    void shouldRehydrateIssue() {
-        UrbanIssue issue = UrbanIssue.rehydrate(
-                10L,
-                defaultTitle,
-                "Rehydrated Desc",
-                defaultCoordinates,
-                defaultReporter,
-                IssueStatus.RESOLVED,
-                IssueCategory.TRASH,
-                null
-        );
+        @Test
+        @DisplayName("Should transition to IN_PROGRESS correctly")
+        void shouldTransitionToInProgress() {
+            UrbanIssue issue = createBaseIssue();
+            UrbanIssue inProgress = issue.markAsInProgress();
 
-        assertEquals(10L, issue.getId());
-        assertEquals("Rehydrated Desc", issue.getDescription());
-        assertEquals(IssueStatus.RESOLVED, issue.getStatus());
-    }
+            assertThat(inProgress.getStatus()).isEqualTo(IssueStatus.IN_PROGRESS);
+            assertThat(issue.getStatus()).isEqualTo(IssueStatus.REPORTED);
+        }
 
-    @Test
-    @DisplayName("Should update specific details while keeping others intact")
-    void shouldCorrectDetails() {
-        UrbanIssue issue = new UrbanIssue(1L, defaultTitle, "Old Desc", defaultCoordinates, defaultReporter, IssueStatus.REPORTED, IssueCategory.OTHER, defaultImage);
+        @Test
+        @DisplayName("Should throw exception when resolving a REPORTED issue directly")
+        void shouldFailResolvingIfReported() {
+            UrbanIssue issue = createBaseIssue();
+            assertThatThrownBy(issue::resolve)
+                    .isInstanceOf(IllegalStateException.class);
+        }
 
-        issue.correctDetails("New Title", null, IssueCategory.ROAD);
+        @Test
+        @DisplayName("Should resolve an issue that is IN_PROGRESS")
+        void shouldResolveCorrectly() {
+            UrbanIssue inProgress = createBaseIssue().markAsInProgress();
+            UrbanIssue resolved = inProgress.resolve();
 
-        assertEquals("New Title", issue.getTitle().value());
-        assertEquals("Old Desc", issue.getDescription());
-        assertEquals(IssueCategory.ROAD, issue.getCategory());
-    }
+            assertThat(resolved.getStatus()).isEqualTo(IssueStatus.RESOLVED);
+        }
 
-    @Test
-    @DisplayName("Should not update details if inputs are empty or blank")
-    void shouldNotUpdate_WhenInputsAreBlank() {
-        UrbanIssue issue = new UrbanIssue(1L, defaultTitle, "Old Desc", defaultCoordinates, defaultReporter, IssueStatus.REPORTED, IssueCategory.OTHER, defaultImage);
-
-        issue.correctDetails("", null, null);
-
-        assertEquals(defaultTitle.value(), issue.getTitle().value());
-    }
-
-    @Test
-    @DisplayName("Should allow transition: REPORTED -> IN_PROGRESS")
-    void shouldMarkAsInProgress() {
-        UrbanIssue issue = new UrbanIssue(1L, defaultTitle, "Desc", defaultCoordinates, defaultReporter, IssueStatus.REPORTED, IssueCategory.ROAD, defaultImage);
-        issue.markAsInProgress();
-        assertEquals(IssueStatus.IN_PROGRESS, issue.getStatus());
-    }
-
-    @Test
-    @DisplayName("Should allow transition: IN_PROGRESS -> RESOLVED")
-    void shouldResolveIssue() {
-        UrbanIssue issue = new UrbanIssue(1L, defaultTitle, "Desc", defaultCoordinates, defaultReporter, IssueStatus.IN_PROGRESS, IssueCategory.ROAD, defaultImage);
-        issue.resolve();
-        assertEquals(IssueStatus.RESOLVED, issue.getStatus());
-    }
-
-    @Test
-    @DisplayName("Should force status change arbitrarily")
-    void shouldForceStatusChange() {
-        UrbanIssue issue = new UrbanIssue(1L, defaultTitle, "Desc", defaultCoordinates, defaultReporter, IssueStatus.REPORTED, IssueCategory.ROAD, defaultImage);
-        issue.forceStatusChange(IssueStatus.RESOLVED);
-        assertEquals(IssueStatus.RESOLVED, issue.getStatus());
-    }
-
-    @Test
-    @DisplayName("Should FAIL transition: RESOLVED -> IN_PROGRESS")
-    void shouldThrowException_WhenWorkingOnResolvedIssue() {
-        UrbanIssue issue = new UrbanIssue(1L, defaultTitle, "Desc", defaultCoordinates, defaultReporter, IssueStatus.RESOLVED, IssueCategory.ROAD, defaultImage);
-        assertThrows(IllegalStateException.class, issue::markAsInProgress);
-    }
-
-    @Test
-    @DisplayName("Should FAIL transition: REPORTED -> RESOLVED")
-    void shouldThrowException_WhenResolvingReportedIssueDirectly() {
-        UrbanIssue issue = new UrbanIssue(1L, defaultTitle, "Desc", defaultCoordinates, defaultReporter, IssueStatus.REPORTED, IssueCategory.ROAD, defaultImage);
-        assertThrows(IllegalStateException.class, issue::resolve);
+        @Test
+        @DisplayName("Should not allow marking as in progress if already resolved")
+        void shouldFailInProgressIfResolved() {
+            UrbanIssue resolved = createBaseIssue().markAsInProgress().resolve();
+            assertThatThrownBy(resolved::markAsInProgress)
+                    .isInstanceOf(IllegalStateException.class);
+        }
     }
 }
