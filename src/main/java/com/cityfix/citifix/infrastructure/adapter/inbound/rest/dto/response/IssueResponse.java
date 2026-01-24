@@ -27,4 +27,6 @@ public record IssueResponse(
                 issue.getImageUrl()
         );
     }
+
+    public record MessageResponse(String message) {}
 }

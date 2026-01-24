@@ -34,6 +34,7 @@ public class IssueController {
     private final FindNearbyIssuesInputPort findNearbyIssuesInputPort;
     private final UpdateIssueStatusInputPort updateIssueStatusInputPort;
     private final UpdateIssueInputPort updateIssueInputPort;
+    private final DeleteIssueInputPort deleteIssueInputPort;
 
     @Operation(summary = "Create a new issue", description = "Report an issue with an optional image.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -114,5 +115,14 @@ public class IssueController {
         UrbanIssue updatedIssue = updateIssueInputPort.execute(command);
 
         return ResponseEntity.ok(IssueResponse.fromDomain(updatedIssue));
+    }
+
+    @Operation(summary = "Delete an issue", description = "Deletes an issue. Requires ADMIN role.")
+    @ApiResponse(responseCode = "204", description = "Deleted successfully")
+    @ApiResponse(responseCode = "403", description = "Forbidden")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<IssueResponse.MessageResponse> deleteIssue(@PathVariable Long id, Principal principal) {
+        deleteIssueInputPort.execute(id, principal.getName());
+        return ResponseEntity.ok(new IssueResponse.MessageResponse("Issue deleted successfully"));
     }
 }
