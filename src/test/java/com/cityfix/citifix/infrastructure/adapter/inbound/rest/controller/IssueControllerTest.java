@@ -5,6 +5,7 @@ import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
 import com.cityfix.citifix.application.port.in.command.UpdateIssueCommand;
 import com.cityfix.citifix.application.port.in.command.UpdateIssueStatusCommand;
 import com.cityfix.citifix.application.port.in.query.FindNearbyIssuesQuery;
+import com.cityfix.citifix.application.usecase.DeleteIssueUseCase;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
@@ -34,9 +35,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -67,6 +66,8 @@ class IssueControllerTest {
     private JwtService jwtService;
     @MockBean
     private UserDetailsService userDetailsService;
+    @MockBean
+    private DeleteIssueUseCase deleteIssueInputPort;
 
     @Test
     @DisplayName("POST /api/issues - Should report issue and return 201")
@@ -189,5 +190,23 @@ class IssueControllerTest {
         verify(findNearbyIssuesInputPort).execute(argThat(query ->
                 query.status().equals("REPORTED") && query.category().equals("ROAD")
         ));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/issues/{id} - Should return 204 No Content")
+    void shouldDeleteIssue() throws Exception {
+        Long issueId = 1L;
+        String adminEmail = "admin@cityfix.com";
+        Principal mockPrincipal = mock(Principal.class);
+        given(mockPrincipal.getName()).willReturn(adminEmail);
+
+        doNothing().when(deleteIssueInputPort).execute(issueId, adminEmail);
+
+        mockMvc.perform(delete("/api/issues/{id}", issueId)
+                        .principal(mockPrincipal))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Issue deleted successfully"));;
+
+        verify(deleteIssueInputPort).execute(issueId, adminEmail);
     }
 }

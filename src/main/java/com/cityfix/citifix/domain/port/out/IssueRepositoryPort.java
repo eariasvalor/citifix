@@ -7,8 +7,8 @@ import java.util.Optional;
 public interface IssueRepositoryPort {
 
     UrbanIssue save(UrbanIssue issue);
-
     Optional<UrbanIssue> findById(Long id);
-
     List<UrbanIssue> findNearby(Double latitude, Double longitude, Double radius, String status, String category, Integer page, Integer size);
+    boolean existsById(Long id);
+    void deleteById(Long id);
 }
