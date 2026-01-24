@@ -19,12 +19,12 @@ public class UpdateIssueStatusUseCase implements UpdateIssueStatusInputPort {
         UrbanIssue issue = repositoryPort.findById(command.issueId())
                 .orElseThrow(() -> new IllegalArgumentException("Issue not found with ID: " + command.issueId()));
 
-        switch (command.newStatus()) {
+        UrbanIssue updatedIssue = switch (command.newStatus()) {
             case "IN_PROGRESS" -> issue.markAsInProgress();
             case "RESOLVED" -> issue.resolve();
-            default -> throw new IllegalArgumentException("Invalid status action: " + command.newStatus());
-        }
+            default -> throw new IllegalArgumentException("Invalid status");
+        };
 
-        return repositoryPort.save(issue);
+        return repositoryPort.save(updatedIssue);
     }
 }

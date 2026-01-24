@@ -7,6 +7,7 @@ import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
 import com.cityfix.citifix.domain.model.valueobject.UserId;
+import com.cityfix.citifix.domain.port.out.ImageStoragePort;
 import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,14 +32,17 @@ class UpdateIssueUseCaseTest {
     @Mock
     private IssueRepositoryPort issueRepositoryPort;
 
+    @Mock
+    private ImageStoragePort imageStoragePort;
+
     @InjectMocks
     private UpdateIssueUseCase updateIssueUseCase;
 
     @Test
-    @DisplayName("Should update issue details and status successfully")
-    void shouldUpdateIssueSuccessfully() {
+    @DisplayName("Should update issue details and status successfully generating a new instance")
+    void shouldUpdateIssueSuccessfully() throws IOException {
         Long issueId = 1L;
-        UrbanIssue existingIssue = UrbanIssue.rehydrate(
+        UrbanIssue existingIssue = new UrbanIssue(
                 issueId,
                 new IssueTitle("Old Title"),
                 "Old Desc",
@@ -43,7 +50,8 @@ class UpdateIssueUseCaseTest {
                 new UserId(10L),
                 IssueStatus.REPORTED,
                 IssueCategory.OTHER,
-                null
+                null,
+                LocalDateTime.now()
         );
 
         UpdateIssueCommand command = new UpdateIssueCommand(
@@ -51,7 +59,8 @@ class UpdateIssueUseCaseTest {
                 "New Title",
                 "New Description",
                 "IN_PROGRESS",
-                "ROAD"
+                "ROAD",
+                null
         );
 
         when(issueRepositoryPort.findById(issueId)).thenReturn(Optional.of(existingIssue));
@@ -63,14 +72,34 @@ class UpdateIssueUseCaseTest {
         assertThat(result.getDescription()).isEqualTo("New Description");
         assertThat(result.getStatus()).isEqualTo(IssueStatus.IN_PROGRESS);
         assertThat(result.getCategory()).isEqualTo(IssueCategory.ROAD);
+        verify(issueRepositoryPort).save(any(UrbanIssue.class));
+    }
 
-        verify(issueRepositoryPort).save(existingIssue);
+    @Test
+    @DisplayName("Should upload image and update URL when provided")
+    void shouldUpdateImageWhenProvided() throws IOException {
+        Long issueId = 1L;
+        UrbanIssue existingIssue = new UrbanIssue(issueId, new IssueTitle("T"), "D", new Coordinates(1.0,1.0), new UserId(1L), IssueStatus.REPORTED, IssueCategory.OTHER, null, LocalDateTime.now());
+
+        MultipartFile mockFile = mock(MultipartFile.class);
+        when(mockFile.isEmpty()).thenReturn(false);
+        when(imageStoragePort.upload(mockFile)).thenReturn("http://new-image.url");
+
+        UpdateIssueCommand command = new UpdateIssueCommand(issueId, null, null, null, null, mockFile);
+
+        when(issueRepositoryPort.findById(issueId)).thenReturn(Optional.of(existingIssue));
+        when(issueRepositoryPort.save(any(UrbanIssue.class))).thenAnswer(i -> i.getArgument(0));
+
+        UrbanIssue result = updateIssueUseCase.execute(command);
+
+        assertThat(result.getImageUrl()).isEqualTo("http://new-image.url");
+        verify(imageStoragePort).upload(mockFile);
     }
 
     @Test
     @DisplayName("Should throw exception when issue not found")
     void shouldThrowExceptionWhenIssueNotFound() {
-        UpdateIssueCommand command = new UpdateIssueCommand(1L, "T", "D", "OPEN", "ROAD");
+        UpdateIssueCommand command = new UpdateIssueCommand(1L, "T", "D", "REPORTED", "ROAD", null);
         when(issueRepositoryPort.findById(1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> updateIssueUseCase.execute(command))
@@ -81,10 +110,10 @@ class UpdateIssueUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should only update non-null fields")
-    void shouldUpdateOnlyNonNullFields() {
+    @DisplayName("Should only update non-null fields returning a new version")
+    void shouldUpdateOnlyNonNullFields() throws IOException {
         Long issueId = 1L;
-        UrbanIssue existingIssue = UrbanIssue.rehydrate(
+        UrbanIssue existingIssue = new UrbanIssue(
                 issueId,
                 new IssueTitle("Original Title"),
                 "Original Desc",
@@ -92,13 +121,15 @@ class UpdateIssueUseCaseTest {
                 new UserId(10L),
                 IssueStatus.REPORTED,
                 IssueCategory.OTHER,
-                null
+                null,
+                LocalDateTime.now()
         );
 
         UpdateIssueCommand command = new UpdateIssueCommand(
                 issueId,
                 null,
                 "New Desc",
+                null,
                 null,
                 null
         );

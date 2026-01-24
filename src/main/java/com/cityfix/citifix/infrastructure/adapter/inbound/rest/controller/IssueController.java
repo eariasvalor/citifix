@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
@@ -99,17 +100,19 @@ public class IssueController {
     }
 
     @Operation(summary = "Update issue details", description = "Updates title, description, category or status fully.")
-    @PatchMapping("/{id}")
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<IssueResponse> updateIssue(
             @PathVariable Long id,
-            @RequestBody @Valid UpdateIssueRequest request
-    ) {
+            @RequestPart("data") UpdateIssueRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) throws IOException {
         var command = new UpdateIssueCommand(
                 id,
                 request.title(),
                 request.description(),
                 request.status(),
-                request.category()
+                request.category(),
+                image
         );
 
         UrbanIssue updatedIssue = updateIssueInputPort.execute(command);

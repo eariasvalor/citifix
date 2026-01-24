@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,7 +62,8 @@ class JpaIssueRepositoryAdapterTest {
                 new UserId(5L),
                 IssueStatus.REPORTED,
                 IssueCategory.OTHER,
-                expectedImageUrl
+                expectedImageUrl,
+                LocalDateTime.now()
         );
 
         UrbanIssue savedIssue = adapter.save(issue);
@@ -86,6 +88,7 @@ class JpaIssueRepositoryAdapterTest {
                 .status(IssueStatus.REPORTED)
                 .category(IssueCategory.OTHER)
                 .imageUrl("http://img.com/issue1.jpg")
+                .createdAt(LocalDateTime.now())
                 .build();
         jpaRepository.save(entity1);
 
@@ -101,15 +104,21 @@ class JpaIssueRepositoryAdapterTest {
     void shouldFilterIssues() {
         jpaRepository.save(IssueEntity.builder()
                 .title("Target Issue").latitude(40.0).longitude(2.0).reporterId(1L)
-                .status(IssueStatus.IN_PROGRESS).category(IssueCategory.ROAD).build());
+                .status(IssueStatus.IN_PROGRESS).category(IssueCategory.ROAD)
+                .createdAt(LocalDateTime.now())
+                .build());
 
         jpaRepository.save(IssueEntity.builder()
                 .title("Wrong Status").latitude(40.0).longitude(2.0).reporterId(2L)
-                .status(IssueStatus.REPORTED).category(IssueCategory.ROAD).build());
+                .status(IssueStatus.REPORTED).category(IssueCategory.ROAD)
+                .createdAt(LocalDateTime.now())
+                .build());
 
         jpaRepository.save(IssueEntity.builder()
                 .title("Wrong Category").latitude(40.0).longitude(2.0).reporterId(3L)
-                .status(IssueStatus.IN_PROGRESS).category(IssueCategory.TRASH).build());
+                .status(IssueStatus.IN_PROGRESS).category(IssueCategory.TRASH)
+                .createdAt(LocalDateTime.now())
+                .build());
 
         List<UrbanIssue> result = adapter.findNearby(
                 40.0, 2.0, 10.0,
