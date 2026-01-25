@@ -59,12 +59,12 @@ public class CreateIssueUseCase implements CreateIssueInputPort {
 
         UrbanIssue issue = new UrbanIssue(
                 null,
-                new IssueTitle(command.title()),
+                title,
                 command.description(),
-                new Coordinates(command.latitude(), command.longitude()),
-                reporter.getId(),
+                coordinates,
+                reporterId,
                 IssueStatus.REPORTED,
-                IssueCategory.valueOf(command.category()),
+                category,
                 imageUrl,
                 LocalDateTime.now()
         );
