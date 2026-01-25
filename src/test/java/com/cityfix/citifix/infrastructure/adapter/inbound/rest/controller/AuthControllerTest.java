@@ -67,7 +67,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("Register should create user, login and return Token")
     void shouldRegisterSuccessfully() throws Exception {
-        RegisterRequest request = new RegisterRequest("new@cityfix.com", "password123", "ROLE_USER");
+        RegisterRequest request = new RegisterRequest("new@cityfix.com", "password123", Set.of("ROLE_USER"));
         User createdUser = User.create("new@cityfix.com", "hash", Set.of("ROLE_USER"));
         String expectedToken = "jwt-token-after-register";
 

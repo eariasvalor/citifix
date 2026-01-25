@@ -25,14 +25,14 @@ public class CreateUserUseCase implements CreateUserInputPort {
             throw new IllegalArgumentException("Email already in use");
         }
 
-        String roleName = (command.role() == null || command.role().isBlank())
-                ? "ROLE_USER"
-                : command.role();
+        Set<String> rolesToAssign = (command.roles() == null || command.roles().isEmpty())
+                ? Set.of("ROLE_USER")
+                : command.roles();
 
         var user = User.create(
                 command.email(),
                 passwordEncoder.encode(command.password()),
-                Set.of(roleName)
+                rolesToAssign
         );
 
         return userRepository.save(user);
