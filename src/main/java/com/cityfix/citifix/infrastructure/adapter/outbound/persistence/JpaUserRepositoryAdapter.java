@@ -8,19 +8,15 @@ import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.repositor
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class JpaUserRepositoryAdapter implements UserRepositoryPort {
 
     private final SpringDataUserRepository springRepository;
-
-    @Override
-    public Optional<User> findByEmail(String email) {
-        return springRepository.findByEmail(email)
-                .map(UserJpaEntity::toDomain);
-    }
 
     @Override
     public User save(User user) {
@@ -40,9 +36,27 @@ public class JpaUserRepositoryAdapter implements UserRepositoryPort {
     }
 
     @Override
+    public Optional<User> findByEmail(String email) {
+        return springRepository.findByEmail(email)
+                .map(UserJpaEntity::toDomain);
+    }
+
+    @Override
     public Optional<User> findById(UserId id) {
         return springRepository.findById(id.value())
                 .map(UserJpaEntity::toDomain);
     }
 
+    @Override
+    public List<User> findAll() {
+        return springRepository.findAll().stream()
+                .map(UserJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteById(UserId id) {
+        springRepository.deleteById(id.value());
+
+    }
 }

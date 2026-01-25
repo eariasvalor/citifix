@@ -1,4 +1,4 @@
-package com.cityfix.citifix.application.usecase;
+package com.cityfix.citifix.application.usecase.issue;
 
 import com.cityfix.citifix.application.port.in.command.UpdateIssueStatusCommand;
 import com.cityfix.citifix.domain.model.UrbanIssue;

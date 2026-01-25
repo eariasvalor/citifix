@@ -2,37 +2,47 @@
 -- 1. USERS (Idempotent: if they exist, it does nothing)
 -- ======================================================================================
 
--- Admin (To manage statuses)
+-- Admin (Password: citifix-admin-2026-secure)
 INSERT INTO users (email, password)
-VALUES ('admin@cityfix.com', '$2a$10$EF/nJocSJLRlil5Kqjbrrelctx3RT2bsgbRtfuf6wMdCnepZ/TzEe')
-ON CONFLICT (email)
-DO UPDATE SET password = EXCLUDED.password;
+SELECT 'admin@cityfix.com', '$2a$10$lKJ6wnM3s920LY/nonSoWO.OgdPhyKc2QmlA7C/wHFKWW5Sg9AmE6'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@cityfix.com');
 
--- Citizen (To report issues)
+-- Citizen (Password: cityfix-user-2026-auth)
 INSERT INTO users (email, password)
-VALUES ('citizen@cityfix.com', '$2a$10$EF/nJocSJLRlil5Kqjbrrelctx3RT2bsgbRtfuf6wMdCnepZ/TzEe')
-ON CONFLICT (email)
-DO UPDATE SET password = EXCLUDED.password;
+SELECT 'citizen@cityfix.com', '$2a$10$lKJ6wnM3s920LY/nonSoWO.OgdPhyKc2QmlA7C/wHFKWW5Sg9AmE6'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'citizen@cityfix.com');
 
 
 -- ======================================================================================
--- 2. ROLES (Linking roles to dynamically retrieved IDs)
+-- 2. ROLES (Linking roles using a more robust check)
 -- ======================================================================================
 
 -- ROLE_ADMIN for admin@cityfix.com
 INSERT INTO user_roles (user_id, role)
 SELECT id, 'ROLE_ADMIN' FROM users WHERE email = 'admin@cityfix.com'
-EXCEPT SELECT user_id, role FROM user_roles;
+AND NOT EXISTS (
+    SELECT 1 FROM user_roles ur
+    JOIN users u ON ur.user_id = u.id
+    WHERE u.email = 'admin@cityfix.com' AND ur.role = 'ROLE_ADMIN'
+);
 
--- ROLE_USER for admin@cityfix.com (optional, if you want them to have both)
+-- ROLE_USER for admin@cityfix.com
 INSERT INTO user_roles (user_id, role)
 SELECT id, 'ROLE_USER' FROM users WHERE email = 'admin@cityfix.com'
-EXCEPT SELECT user_id, role FROM user_roles;
+AND NOT EXISTS (
+    SELECT 1 FROM user_roles ur
+    JOIN users u ON ur.user_id = u.id
+    WHERE u.email = 'admin@cityfix.com' AND ur.role = 'ROLE_USER'
+);
 
 -- ROLE_USER for citizen@cityfix.com
 INSERT INTO user_roles (user_id, role)
 SELECT id, 'ROLE_USER' FROM users WHERE email = 'citizen@cityfix.com'
-EXCEPT SELECT user_id, role FROM user_roles;
+AND NOT EXISTS (
+    SELECT 1 FROM user_roles ur
+    JOIN users u ON ur.user_id = u.id
+    WHERE u.email = 'citizen@cityfix.com' AND ur.role = 'ROLE_USER'
+);
 
 
 -- ======================================================================================

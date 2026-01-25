@@ -1,4 +1,4 @@
-package com.cityfix.citifix.application.usecase;
+package com.cityfix.citifix.application.usecase.user;
 
 import com.cityfix.citifix.application.port.in.LoginInputPort;
 import com.cityfix.citifix.application.port.in.command.LoginCommand;
@@ -8,6 +8,7 @@ import com.cityfix.citifix.infrastructure.config.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,10 +31,15 @@ public class LoginUseCase implements LoginInputPort {
         User user = userRepository.findByEmail(command.email())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        var authorities = user.getRoles().stream()
+                .map(SimpleGrantedAuthority::new)
+                .toList();
+
         var springUser = new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
-                java.util.Collections.emptyList());
+                authorities
+        );
 
         return jwtService.generateToken(springUser);
     }
