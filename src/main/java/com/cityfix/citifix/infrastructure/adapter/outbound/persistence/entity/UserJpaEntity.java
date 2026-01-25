@@ -43,10 +43,10 @@ public class UserJpaEntity {
 
     public com.cityfix.citifix.domain.model.User toDomain() {
         return new com.cityfix.citifix.domain.model.User(
-                this.id,
+                new com.cityfix.citifix.domain.model.valueobject.UserId(this.id),
                 this.email,
                 this.password,
-                this.roles
+                this.roles != null ? new java.util.HashSet<>(this.roles) : new java.util.HashSet<>()
         );
     }
 }

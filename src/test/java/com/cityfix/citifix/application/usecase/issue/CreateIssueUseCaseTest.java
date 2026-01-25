@@ -1,12 +1,10 @@
-package com.cityfix.citifix.application.usecase;
+package com.cityfix.citifix.application.usecase.issue;
 
 import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.User;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
-import com.cityfix.citifix.domain.model.valueobject.Coordinates;
-import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
 import com.cityfix.citifix.domain.model.valueobject.UserId;
 import com.cityfix.citifix.domain.port.out.ImageStoragePort;
 import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
@@ -18,7 +16,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 

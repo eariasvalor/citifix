@@ -1,4 +1,4 @@
-package com.cityfix.citifix.application.usecase;
+package com.cityfix.citifix.application.usecase.issue;
 
 import com.cityfix.citifix.application.port.in.CreateIssueInputPort;
 import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;

@@ -5,7 +5,7 @@ import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
 import com.cityfix.citifix.application.port.in.command.UpdateIssueCommand;
 import com.cityfix.citifix.application.port.in.command.UpdateIssueStatusCommand;
 import com.cityfix.citifix.application.port.in.query.FindNearbyIssuesQuery;
-import com.cityfix.citifix.application.usecase.DeleteIssueUseCase;
+import com.cityfix.citifix.application.usecase.issue.DeleteIssueUseCase;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
@@ -27,7 +27,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.time.LocalDateTime;

@@ -24,15 +24,18 @@ public class ApplicationConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByEmail(username)
-                .map(domainUser -> new org.springframework.security.core.userdetails.User(
-                        domainUser.getEmail(),
-                        domainUser.getPassword(),
-                        domainUser.getRoles().stream()
-                                .map(SimpleGrantedAuthority::new)
-                                .collect(Collectors.toList())
-                ))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return username -> {
+            com.cityfix.citifix.domain.model.User domainUser = userRepository.findByEmail(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            return org.springframework.security.core.userdetails.User.builder()
+                    .username(domainUser.getEmail())
+                    .password(domainUser.getPassword())
+                    .authorities(domainUser.getRoles().stream()
+                            .map(SimpleGrantedAuthority::new)
+                            .toList())
+                    .build();
+        };
     }
 
     @Bean

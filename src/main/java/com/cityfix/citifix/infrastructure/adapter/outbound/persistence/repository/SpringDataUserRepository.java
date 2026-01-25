@@ -1,8 +1,10 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence.repository;
 
+import com.cityfix.citifix.domain.model.User;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity.UserJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SpringDataUserRepository extends JpaRepository<UserJpaEntity, Long> {

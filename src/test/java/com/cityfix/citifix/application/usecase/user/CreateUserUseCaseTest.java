@@ -1,4 +1,4 @@
-package com.cityfix.citifix.application.usecase;
+package com.cityfix.citifix.application.usecase.user;
 
 import com.cityfix.citifix.application.port.in.command.CreateUserCommand;
 import com.cityfix.citifix.domain.model.User;
@@ -11,8 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
