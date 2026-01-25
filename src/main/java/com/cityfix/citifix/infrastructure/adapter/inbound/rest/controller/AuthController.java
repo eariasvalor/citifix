@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Set;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -29,7 +31,9 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Register a new user")
     public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest request) {
-        var command = new CreateUserCommand(request.email(), request.password(), request.role());
+        Set<String> initialRoles = (request.roles() != null) ? request.roles() : Set.of("ROLE_USER");
+
+        var command = new CreateUserCommand(request.email(), request.password(), request.roles());
         createUserUseCase.execute(command);
 
         var loginCommand = new LoginCommand(request.email(), request.password());

@@ -12,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,7 +34,7 @@ class CreateUserUseCaseTest {
     @Test
     @DisplayName("Should create user successfully when email is unique")
     void shouldCreateUserWhenEmailUnique() {
-        CreateUserCommand command = new CreateUserCommand("newuser@cityfix.com", "plainPassword", "ROLE_USER");
+        CreateUserCommand command = new CreateUserCommand("newuser@cityfix.com", "plainPassword", Set.of("ROLE_USER", "ROLE_ADMIN"));
 
         when(userRepository.existsByEmail(command.email())).thenReturn(false);
         when(passwordEncoder.encode(command.password())).thenReturn("encodedHash123");
@@ -53,7 +55,7 @@ class CreateUserUseCaseTest {
     @Test
     @DisplayName("Should throw exception when email already exists")
     void shouldThrowWhenEmailExists() {
-        CreateUserCommand command = new CreateUserCommand("existing@cityfix.com", "pass", "ROLE_USER");
+        CreateUserCommand command = new CreateUserCommand("existing@cityfix.com", "pass", Set.of("ROLE_USER", "ROLE_ADMIN"));
 
         when(userRepository.existsByEmail(command.email())).thenReturn(true);
 
