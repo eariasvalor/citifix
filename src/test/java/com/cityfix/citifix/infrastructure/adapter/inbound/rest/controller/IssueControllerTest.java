@@ -230,4 +230,17 @@ class IssueControllerTest {
                 LocalDateTime.now()
         );
     }
+    @Test
+    @DisplayName("Outside-In: Should return 400 when creating issue with invalid coordinates")
+    void shouldRejectInvalidCoordinates() throws Exception {
+        CreateIssueRequest invalidRequest = new CreateIssueRequest("Title", "Desc", 150.0, 2.0, "ROAD");
+        MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
+                objectMapper.writeValueAsBytes(invalidRequest));
+
+        mockMvc.perform(multipart("/api/issues")
+                        .file(dataPart)
+                        .with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+
 }

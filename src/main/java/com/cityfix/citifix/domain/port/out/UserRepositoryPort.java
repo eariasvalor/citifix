@@ -13,5 +13,5 @@ public interface UserRepositoryPort {
     long count();
     Optional<User> findById(UserId id);
     void deleteById(UserId id);
-    List<User> findAll();
+    List<User> findAll(int page, int size);
 }

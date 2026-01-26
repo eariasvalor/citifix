@@ -32,6 +32,7 @@ public class ApplicationConfig {
                     .username(domainUser.getEmail())
                     .password(domainUser.getPassword())
                     .authorities(domainUser.getRoles().stream()
+                            .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
                             .map(SimpleGrantedAuthority::new)
                             .toList())
                     .build();

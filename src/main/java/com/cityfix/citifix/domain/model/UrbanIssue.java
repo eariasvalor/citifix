@@ -67,7 +67,7 @@ public final class UrbanIssue {
                 status,
                 category,
                 imageUrl,
-                LocalDateTime.now()
+                createdAt
         );
     }
 
@@ -93,10 +93,11 @@ public final class UrbanIssue {
     }
 
     public UrbanIssue markAsInProgress() {
-        if (this.status == IssueStatus.RESOLVED) {
-            throw new IllegalStateException("Cannot work on a resolved issue");
-        }
         return withStatus(IssueStatus.IN_PROGRESS);
+    }
+
+    public UrbanIssue backToReported() {
+        return withStatus(IssueStatus.REPORTED);
     }
 
     public UrbanIssue resolve() {

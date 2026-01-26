@@ -5,6 +5,6 @@ import jakarta.validation.constraints.Pattern;
 
 public record UpdateStatusRequest(
         @NotNull(message = "New status is required")
-        @Pattern(regexp = "IN_PROGRESS|RESOLVED", message = "Status must be IN_PROGRESS or RESOLVED")
+        @Pattern(regexp = "REPORTED|IN_PROGRESS|RESOLVED", message = "Status must be REPORTED, IN_PROGRESS or RESOLVED")
         String status
 ) {}

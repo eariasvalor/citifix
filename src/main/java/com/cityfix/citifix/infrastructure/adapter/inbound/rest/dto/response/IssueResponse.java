@@ -17,13 +17,13 @@ public record IssueResponse(
     public static IssueResponse fromDomain(UrbanIssue issue) {
         return new IssueResponse(
                 issue.getId(),
-                issue.getTitle().value(),
+                issue.getTitle() != null ? issue.getTitle().value() : null,
                 issue.getDescription(),
-                issue.getCoordinates().latitude(),
-                issue.getCoordinates().longitude(),
-                issue.getStatus().name(),
-                issue.getCategory().name(),
-                issue.getReporterId().getValue().toString(),
+                issue.getCoordinates() != null ? issue.getCoordinates().latitude() : null,
+                issue.getCoordinates() != null ? issue.getCoordinates().longitude() : null,
+                issue.getStatus() != null ? issue.getStatus().name() : null,
+                issue.getCategory() != null ? issue.getCategory().name() : "OTHER",
+                issue.getReporterId() != null ? issue.getReporterId().getValue().toString() : null,
                 issue.getImageUrl()
         );
     }

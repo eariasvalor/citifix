@@ -17,6 +17,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 
@@ -129,5 +132,22 @@ class JpaIssueRepositoryAdapterTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle().value()).isEqualTo("Target Issue");
+    }
+
+    @Test
+    @DisplayName("Persistence: Should find issues by reporter ID using derived query")
+    void shouldFindIssuesByReporter() {
+        Long reporterId = 500L;
+        Pageable pageable = PageRequest.of(0, 10);
+        IssueEntity entity = IssueEntity.builder()
+                .title("User Specific Issue").description("...").latitude(40.0).longitude(2.0)
+                .reporterId(reporterId).status(IssueStatus.REPORTED).category(IssueCategory.OTHER)
+                .createdAt(LocalDateTime.now()).build();
+        jpaRepository.save(entity);
+
+        Page<UrbanIssue> results = adapter.findByReporterIdWithFilters(reporterId, null, null, pageable);
+
+        assertThat(results).hasSize(1);
+        assertThat(results.get().findFirst().get().getTitle().value()).isEqualTo("User Specific Issue");
     }
 }

@@ -6,6 +6,7 @@ import com.cityfix.citifix.domain.port.out.UserRepositoryPort;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity.UserJpaEntity;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.repository.SpringDataUserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -48,8 +49,9 @@ public class JpaUserRepositoryAdapter implements UserRepositoryPort {
     }
 
     @Override
-    public List<User> findAll() {
-        return springRepository.findAll().stream()
+    public List<User> findAll(int page, int size) {
+        var pageable = PageRequest.of(page, size);
+        return springRepository.findAll(pageable).stream()
                 .map(UserJpaEntity::toDomain)
                 .collect(Collectors.toList());
     }

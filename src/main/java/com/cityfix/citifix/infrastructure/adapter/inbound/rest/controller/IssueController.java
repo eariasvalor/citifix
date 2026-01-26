@@ -82,10 +82,13 @@ public class IssueController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Update issue status", description = "Updates the status (e.g., from REPORTED to IN_PROGRESS). Enforces business workflow.")
+    @Operation(
+            summary = "Update issue status",
+            description = "Updates the issue status to any valid state defined in the system."
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Status updated successfully"),
-            @ApiResponse(responseCode = "422", description = "Business rule violation (e.g. invalid transition)")
+            @ApiResponse(responseCode = "400", description = "Invalid status value provided")
     })
     @PatchMapping("/{id}/status")
     public ResponseEntity<IssueResponse> updateStatus(
@@ -98,6 +101,7 @@ public class IssueController {
 
         return ResponseEntity.ok(IssueResponse.fromDomain(updatedIssue));
     }
+
 
     @Operation(summary = "Update issue details", description = "Updates title, description, category or status fully.")
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -128,4 +132,6 @@ public class IssueController {
         deleteIssueInputPort.execute(id, principal.getName());
         return ResponseEntity.ok(new IssueResponse.MessageResponse("Issue deleted successfully"));
     }
+
+
 }
