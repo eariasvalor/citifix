@@ -4,12 +4,17 @@ import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
+import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity.IssueEntity;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.mapper.IssueMapper;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.repository.SpringDataIssueRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -79,4 +84,26 @@ public class JpaIssueRepositoryAdapter implements IssueRepositoryPort {
     public void deleteById(Long id) {
         repository.deleteById(id);
     }
+
+    @Override
+    public Page<UrbanIssue> findByReporterIdWithFilters(Long userId, String status, String category, Pageable pageable) {
+        Specification<IssueEntity> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+            predicates.add(cb.equal(root.get("reporterId"), userId));
+
+            if (status != null && !status.isEmpty()) {
+                predicates.add(cb.equal(root.get("status"), status.toUpperCase()));
+            }
+
+            if (category != null && !category.isEmpty()) {
+                predicates.add(cb.equal(root.get("category"), category.toUpperCase()));
+            }
+
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        return repository.findAll(spec, pageable).map(issueMapper::toDomain);
+    }
+
 }

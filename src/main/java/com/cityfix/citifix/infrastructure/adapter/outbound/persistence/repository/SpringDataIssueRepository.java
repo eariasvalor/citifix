@@ -4,15 +4,18 @@ import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.infrastructure.adapter.outbound.persistence.entity.IssueEntity;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface SpringDataIssueRepository extends JpaRepository<IssueEntity, Long> {
+public interface SpringDataIssueRepository extends JpaRepository<IssueEntity, Long>, JpaSpecificationExecutor<IssueEntity> {
 
     @Query(value = """
         SELECT * FROM urban_issues i
@@ -32,4 +35,8 @@ public interface SpringDataIssueRepository extends JpaRepository<IssueEntity, Lo
             @Param("category") String category,
             Pageable pageable
     );
+
+    List<IssueEntity> findByReporterId(Long reporterId, Pageable pageable);
+
+
 }

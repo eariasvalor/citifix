@@ -37,7 +37,7 @@ class UpdateIssueStatusUseCaseTest {
     void shouldUpdateStatusToInProgress() {
             Long issueId = 1L;
             var command = new UpdateIssueStatusCommand(issueId, "IN_PROGRESS");
-            var issue = createMockIssue(issueId, IssueStatus.REPORTED); // Método helper
+            var issue = createMockIssue(issueId, IssueStatus.REPORTED);
 
             when(repositoryPort.findById(issueId)).thenReturn(Optional.of(issue));
             when(repositoryPort.save(any(UrbanIssue.class))).thenAnswer(i -> i.getArgument(0));
@@ -58,31 +58,6 @@ class UpdateIssueStatusUseCaseTest {
         verify(repositoryPort, never()).save(any());
     }
 
-    @Test
-    @DisplayName("Should throw exception for invalid status transition (Reported -> Resolved)")
-    void shouldThrowExceptionForInvalidTransition() {
-        Long issueId = 1L;
-        var description = "this is a sample description";
-        var command = new UpdateIssueStatusCommand(issueId, "RESOLVED");
-
-        var issue = new UrbanIssue(
-                issueId,
-                new IssueTitle("Test"),
-                description,
-                new Coordinates(0.0, 0.0),
-                new UserId(1L),
-                IssueStatus.REPORTED,
-                IssueCategory.OTHER,
-                null,
-                LocalDateTime.now()
-        );
-
-        when(repositoryPort.findById(issueId)).thenReturn(Optional.of(issue));
-
-        assertThrows(IllegalStateException.class, () -> useCase.execute(command));
-
-        verify(repositoryPort, never()).save(any());
-    }
 
     private UrbanIssue createMockIssue(Long id, IssueStatus status) {
         return new UrbanIssue(

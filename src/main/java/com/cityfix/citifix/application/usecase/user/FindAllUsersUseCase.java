@@ -16,7 +16,7 @@ public class FindAllUsersUseCase implements FindAllUsersInputPort {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> execute() {
-        return userRepositoryPort.findAll();
+    public List<User> execute(int page, int size) {
+        return userRepositoryPort.findAll(page, size);
     }
 }

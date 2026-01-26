@@ -46,6 +46,7 @@ public class UpdateIssueUseCase implements UpdateIssueInputPort {
         return switch (newStatus) {
             case IN_PROGRESS -> issue.markAsInProgress();
             case RESOLVED -> issue.resolve();
+            case REPORTED -> issue.backToReported();
             default -> issue;
         };
     }

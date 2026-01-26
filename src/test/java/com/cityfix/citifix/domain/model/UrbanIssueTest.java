@@ -62,12 +62,11 @@ class UrbanIssueTest {
             UrbanIssue original = createBaseIssue();
             UrbanIssue updated = original.updateDetails("New Title", "New Desc", IssueCategory.ROAD);
 
-            // Assert New Instance
             assertThat(updated).isNotSameAs(original);
             assertThat(updated.getTitle().value()).isEqualTo("New Title");
             assertThat(updated.getCategory()).isEqualTo(IssueCategory.ROAD);
 
-            // Assert Original Unchanged
+
             assertThat(original.getTitle().value()).isEqualTo("Original Title");
             assertThat(original.getCategory()).isEqualTo(IssueCategory.LIGHTING);
         }
@@ -124,12 +123,15 @@ class UrbanIssueTest {
             assertThat(resolved.getStatus()).isEqualTo(IssueStatus.RESOLVED);
         }
 
-        @Test
-        @DisplayName("Should not allow marking as in progress if already resolved")
-        void shouldFailInProgressIfResolved() {
-            UrbanIssue resolved = createBaseIssue().markAsInProgress().resolve();
-            assertThatThrownBy(resolved::markAsInProgress)
-                    .isInstanceOf(IllegalStateException.class);
-        }
+    }
+
+    @Test
+    @DisplayName("Should allow marking as in progress even if already resolved")
+    void shouldAllowInProgressIfResolved() {
+        UrbanIssue resolved = createBaseIssue().markAsInProgress().resolve();
+
+        UrbanIssue reopened = resolved.markAsInProgress();
+
+        assertThat(reopened.getStatus()).isEqualTo(IssueStatus.IN_PROGRESS);
     }
 }

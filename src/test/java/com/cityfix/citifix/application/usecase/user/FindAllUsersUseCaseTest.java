@@ -32,23 +32,23 @@ class FindAllUsersUseCaseTest {
         User user2 = new User(2L, "citizen@cityfix.com", "hash2", Set.of("USER"));
         List<User> expectedUsers = List.of(user1, user2);
 
-        when(userRepositoryPort.findAll()).thenReturn(expectedUsers);
+        when(userRepositoryPort.findAll(1, 10)).thenReturn(expectedUsers);
 
-        List<User> result = findAllUsersUseCase.execute();
+        List<User> result = findAllUsersUseCase.execute(1, 10);
 
         assertThat(result).hasSize(2);
         assertThat(result).containsExactly(user1, user2);
-        verify(userRepositoryPort).findAll();
+        verify(userRepositoryPort).findAll(1, 10);
     }
 
     @Test
     @DisplayName("Should return empty list when no users exist")
     void shouldReturnEmptyList() {
-        when(userRepositoryPort.findAll()).thenReturn(List.of());
+        when(userRepositoryPort.findAll(1, 10)).thenReturn(List.of());
 
-        List<User> result = findAllUsersUseCase.execute();
+        List<User> result = findAllUsersUseCase.execute(1, 10);
 
         assertThat(result).isEmpty();
-        verify(userRepositoryPort).findAll();
+        verify(userRepositoryPort).findAll(1, 10);
     }
 }

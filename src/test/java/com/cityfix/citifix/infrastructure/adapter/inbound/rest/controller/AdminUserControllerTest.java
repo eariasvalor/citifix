@@ -2,6 +2,7 @@ package com.cityfix.citifix.infrastructure.adapter.inbound.rest.controller;
 
 import com.cityfix.citifix.application.port.in.DeleteUserInputPort;
 import com.cityfix.citifix.application.port.in.FindAllUsersInputPort;
+import com.cityfix.citifix.application.port.in.FindIssuesByUserIdInputPort;
 import com.cityfix.citifix.application.port.in.UpdateUserInputPort;
 import com.cityfix.citifix.domain.model.User;
 import com.cityfix.citifix.infrastructure.config.security.JwtService;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -48,15 +50,21 @@ class AdminUserControllerTest {
     private JwtService jwtService;
     @MockBean
     private UserDetailsService userDetailsService;
+    @MockBean
+    private FindIssuesByUserIdInputPort findIssuesByUserIdUseCase;
 
     @Test
     @DisplayName("GET /api/admin/users - Should return list for ADMIN")
     @WithMockUser(roles = "ADMIN")
     void shouldReturnAllUsers() throws Exception {
         User user = new User(1L, "test@test.com", "hash", Set.of("USER"));
-        when(findAllUsersPort.execute()).thenReturn(List.of(user));
 
-        mockMvc.perform(get("/api/admin/users"))
+        when(findAllUsersPort.execute(anyInt(), anyInt())).thenReturn(List.of(user));
+
+        mockMvc.perform(get("/api/admin/users")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].email").value("test@test.com"))
                 .andExpect(jsonPath("$[0].id").value(1));
