@@ -1,6 +1,7 @@
 package com.cityfix.citifix.application.usecase.user;
 
 import com.cityfix.citifix.application.port.in.command.CreateUserCommand;
+import com.cityfix.citifix.domain.event.IssueCreatedEvent;
 import com.cityfix.citifix.domain.model.User;
 import com.cityfix.citifix.domain.port.out.UserRepositoryPort;
 import org.junit.jupiter.api.DisplayName;
@@ -10,6 +11,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Set;
@@ -31,6 +33,9 @@ class CreateUserUseCaseTest {
     @InjectMocks
     private CreateUserUseCase createUserUseCase;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @Test
     @DisplayName("Should create user successfully when email is unique")
     void shouldCreateUserWhenEmailUnique() {
@@ -41,8 +46,8 @@ class CreateUserUseCaseTest {
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         User createdUser = createUserUseCase.execute(command);
+        eventPublisher.publishEvent(createdUser);
 
-        assertThat(createdUser).isNotNull();
         assertThat(createdUser.getEmail()).isEqualTo(command.email());
         assertThat(createdUser.getPassword()).isEqualTo("encodedHash123");
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);

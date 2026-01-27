@@ -7,6 +7,7 @@ import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
 import com.cityfix.citifix.domain.model.valueobject.UserId;
+import com.cityfix.citifix.domain.port.out.DomainEventPublisherPort;
 import com.cityfix.citifix.domain.port.out.ImageStoragePort;
 import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +35,9 @@ class UpdateIssueUseCaseTest {
 
     @Mock
     private ImageStoragePort imageStoragePort;
+
+    @Mock
+    private DomainEventPublisherPort eventPublisher;
 
     @InjectMocks
     private UpdateIssueUseCase updateIssueUseCase;
