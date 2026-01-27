@@ -2,13 +2,17 @@ package com.cityfix.citifix.application.usecase.issue;
 
 import com.cityfix.citifix.application.port.in.CreateIssueInputPort;
 import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
+import com.cityfix.citifix.domain.event.IssueCreatedEvent;
+import com.cityfix.citifix.domain.event.IssueStatusChangedEvent;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.User;
+import com.cityfix.citifix.domain.model.UserStats;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
 import com.cityfix.citifix.domain.model.valueobject.IssueTitle;
 import com.cityfix.citifix.domain.model.valueobject.UserId;
+import com.cityfix.citifix.domain.port.out.DomainEventPublisherPort;
 import com.cityfix.citifix.domain.port.out.ImageStoragePort;
 import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
 import com.cityfix.citifix.domain.port.out.UserRepositoryPort;
@@ -26,6 +30,10 @@ public class CreateIssueUseCase implements CreateIssueInputPort {
     private final IssueRepositoryPort issueRepository;
     private final UserRepositoryPort userRepository;
     private final ImageStoragePort imageStorage;
+    private final DomainEventPublisherPort eventPublisher;
+
+
+
 
     @Override
     @Transactional
@@ -69,6 +77,9 @@ public class CreateIssueUseCase implements CreateIssueInputPort {
                 LocalDateTime.now()
         );
 
-        return issueRepository.save(issue);
+        UrbanIssue savedIssue = issueRepository.save(issue);
+        eventPublisher.publishEvent(new IssueCreatedEvent(savedIssue));
+
+        return savedIssue;
     }
 }

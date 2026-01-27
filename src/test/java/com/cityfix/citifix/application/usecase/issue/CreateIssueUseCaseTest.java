@@ -1,11 +1,13 @@
 package com.cityfix.citifix.application.usecase.issue;
 
 import com.cityfix.citifix.application.port.in.command.CreateIssueCommand;
+import com.cityfix.citifix.domain.event.IssueCreatedEvent;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.User;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.model.valueobject.UserId;
+import com.cityfix.citifix.domain.port.out.DomainEventPublisherPort;
 import com.cityfix.citifix.domain.port.out.ImageStoragePort;
 import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
 import com.cityfix.citifix.domain.port.out.UserRepositoryPort;
@@ -16,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
 
@@ -33,11 +36,14 @@ class CreateIssueUseCaseTest {
 
     @InjectMocks private CreateIssueUseCase createIssueUseCase;
 
+    @Mock
+    private DomainEventPublisherPort eventPublisher;
+
     @Test
-    @DisplayName("Should create issue successfully when user exists")
-    void shouldCreateIssueWhenUserExists() {
+    void shouldCreateIssueAndPublishEvent() {
         String email = "citizen@cityfix.com";
         CreateIssueCommand command = new CreateIssueCommand("Broken Lamp", "", 41.38, 2.17, "LIGHTING", email);
+
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn(new UserId(99L));
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(mockUser));
@@ -58,11 +64,21 @@ class CreateIssueUseCaseTest {
 
         UrbanIssue result = createIssueUseCase.execute(command, null);
 
-        ArgumentCaptor<UrbanIssue> captor = ArgumentCaptor.forClass(UrbanIssue.class);
-        verify(issueRepository).save(captor.capture());
+        ArgumentCaptor<UrbanIssue> issueCaptor = ArgumentCaptor.forClass(UrbanIssue.class);
+        verify(issueRepository).save(issueCaptor.capture());
 
+        assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
-        assertThat(captor.getValue().getReporterId().value()).isEqualTo(99L);
+        assertThat(issueCaptor.getValue().getReporterId().value()).isEqualTo(99L);
+
+        ArgumentCaptor<IssueCreatedEvent> eventCaptor = ArgumentCaptor.forClass(IssueCreatedEvent.class);
+
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        IssueCreatedEvent publishedEvent = eventCaptor.getValue();
+        assertThat(publishedEvent).isNotNull();
+        assertThat(publishedEvent.getIssue()).isEqualTo(result);
+        assertThat(publishedEvent.getIssue().getId()).isEqualTo(1L);
     }
 
     @Test
@@ -74,4 +90,5 @@ class CreateIssueUseCaseTest {
         assertThatThrownBy(() -> createIssueUseCase.execute(command, null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
 }
