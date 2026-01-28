@@ -40,9 +40,16 @@ public class UserStatsEventListener {
             result = result.withDecrementedInProgress();
         }
 
+        result = switch (oldStatus) {
+            case "REPORTED" -> result.withDecrementedReported();
+            case "IN_PROGRESS" -> result.withDecrementedInProgress();
+            default -> result;
+        };
+
         result = switch (newStatus) {
             case "IN_PROGRESS" -> result.withIncrementedInProgress();
             case "RESOLVED" -> result.withIncrementedResolved().withAddedImpactPoints(100);
+            case "REPORTED" -> result.withIncrementedReported();
             default -> result;
         };
 

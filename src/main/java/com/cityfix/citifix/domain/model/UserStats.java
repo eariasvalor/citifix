@@ -30,6 +30,10 @@ public class UserStats {
         );
     }
 
+    public UserStats withDecrementedReported() {
+        return new UserStats(this.userId, Math.max(0, this.totalReported - 1), this.inProgressCount, this.resolvedCount, this.impactPoints);
+    }
+
     public UserStats withDecrementedInProgress() {
         return new UserStats(userId, totalReported, Math.max(0, inProgressCount - 1), resolvedCount, impactPoints);
     }
