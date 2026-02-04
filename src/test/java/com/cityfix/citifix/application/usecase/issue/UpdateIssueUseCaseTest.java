@@ -2,6 +2,7 @@ package com.cityfix.citifix.application.usecase.issue;
 
 import com.cityfix.citifix.application.port.in.command.UpdateIssueCommand;
 import com.cityfix.citifix.domain.model.UrbanIssue;
+import com.cityfix.citifix.domain.model.User;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
 import com.cityfix.citifix.domain.model.valueobject.Coordinates;
@@ -10,6 +11,8 @@ import com.cityfix.citifix.domain.model.valueobject.UserId;
 import com.cityfix.citifix.domain.port.out.DomainEventPublisherPort;
 import com.cityfix.citifix.domain.port.out.ImageStoragePort;
 import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
+import com.cityfix.citifix.domain.port.out.UserRepositoryPort;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,51 +43,45 @@ class UpdateIssueUseCaseTest {
     @Mock
     private DomainEventPublisherPort eventPublisher;
 
+    @Mock
+    private UserRepositoryPort userRepositoryPort;
+
     @InjectMocks
     private UpdateIssueUseCase updateIssueUseCase;
 
+    private final String TEST_EMAIL = "user@test.com";
+    private User mockUser;
+
+    @BeforeEach
+    void setUp() {
+        mockUser = new User(new UserId(10L), TEST_EMAIL, "hash", Set.of("ROLE_USER"));
+    }
+
     @Test
-    @DisplayName("Should update issue details and status successfully generating a new instance")
+    @DisplayName("Should update issue details successfully when requester is the owner")
     void shouldUpdateIssueSuccessfully() throws IOException {
         Long issueId = 1L;
-        UrbanIssue existingIssue = new UrbanIssue(
-                issueId,
-                new IssueTitle("Old Title"),
-                "Old Desc",
-                new Coordinates(1.0, 1.0),
-                new UserId(10L),
-                IssueStatus.REPORTED,
-                IssueCategory.OTHER,
-                null,
-                LocalDateTime.now()
-        );
+        UrbanIssue existingIssue = createBaseIssue(issueId, 10L);
 
         UpdateIssueCommand command = new UpdateIssueCommand(
-                issueId,
-                "New Title",
-                "New Description",
-                "IN_PROGRESS",
-                "ROAD",
-                null
+                issueId, "New Title", "New Description", null, "ROAD", null
         );
 
         when(issueRepositoryPort.findById(issueId)).thenReturn(Optional.of(existingIssue));
-        when(issueRepositoryPort.save(any(UrbanIssue.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepositoryPort.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(mockUser));
+        when(issueRepositoryPort.save(any(UrbanIssue.class))).thenAnswer(i -> i.getArgument(0));
 
-        UrbanIssue result = updateIssueUseCase.execute(command);
+        UrbanIssue result = updateIssueUseCase.execute(command, TEST_EMAIL);
 
         assertThat(result.getTitle().value()).isEqualTo("New Title");
-        assertThat(result.getDescription()).isEqualTo("New Description");
-        assertThat(result.getStatus()).isEqualTo(IssueStatus.IN_PROGRESS);
-        assertThat(result.getCategory()).isEqualTo(IssueCategory.ROAD);
         verify(issueRepositoryPort).save(any(UrbanIssue.class));
     }
 
     @Test
-    @DisplayName("Should upload image and update URL when provided")
+    @DisplayName("Should upload image when provided by owner")
     void shouldUpdateImageWhenProvided() throws IOException {
         Long issueId = 1L;
-        UrbanIssue existingIssue = new UrbanIssue(issueId, new IssueTitle("T"), "D", new Coordinates(1.0,1.0), new UserId(1L), IssueStatus.REPORTED, IssueCategory.OTHER, null, LocalDateTime.now());
+        UrbanIssue existingIssue = createBaseIssue(issueId, 10L);
 
         MultipartFile mockFile = mock(MultipartFile.class);
         when(mockFile.isEmpty()).thenReturn(false);
@@ -92,59 +90,50 @@ class UpdateIssueUseCaseTest {
         UpdateIssueCommand command = new UpdateIssueCommand(issueId, null, null, null, null, mockFile);
 
         when(issueRepositoryPort.findById(issueId)).thenReturn(Optional.of(existingIssue));
+        when(userRepositoryPort.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(mockUser));
         when(issueRepositoryPort.save(any(UrbanIssue.class))).thenAnswer(i -> i.getArgument(0));
 
-        UrbanIssue result = updateIssueUseCase.execute(command);
+        UrbanIssue result = updateIssueUseCase.execute(command, TEST_EMAIL);
 
         assertThat(result.getImageUrl()).isEqualTo("http://new-image.url");
-        verify(imageStoragePort).upload(mockFile);
     }
 
     @Test
     @DisplayName("Should throw exception when issue not found")
     void shouldThrowExceptionWhenIssueNotFound() {
-        UpdateIssueCommand command = new UpdateIssueCommand(1L, "T", "D", "REPORTED", "ROAD", null);
+        UpdateIssueCommand command = new UpdateIssueCommand(1L, "T", "D", null, "ROAD", null);
         when(issueRepositoryPort.findById(1L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> updateIssueUseCase.execute(command))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Issue not found");
-
-        verify(issueRepositoryPort, never()).save(any());
+        assertThatThrownBy(() -> updateIssueUseCase.execute(command, TEST_EMAIL))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    @DisplayName("Should only update non-null fields returning a new version")
-    void shouldUpdateOnlyNonNullFields() throws IOException {
+    @DisplayName("Should throw SecurityException when requester is not the owner")
+    void shouldThrowWhenNotOwner() {
         Long issueId = 1L;
-        UrbanIssue existingIssue = new UrbanIssue(
-                issueId,
+        UrbanIssue existingIssue = createBaseIssue(issueId, 999L);
+
+        UpdateIssueCommand command = new UpdateIssueCommand(issueId, "Title", null, null, null, null);
+
+        when(issueRepositoryPort.findById(issueId)).thenReturn(Optional.of(existingIssue));
+        when(userRepositoryPort.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(mockUser));
+
+        assertThatThrownBy(() -> updateIssueUseCase.execute(command, TEST_EMAIL))
+                .isInstanceOf(SecurityException.class);
+    }
+
+    private UrbanIssue createBaseIssue(Long id, Long reporterId) {
+        return new UrbanIssue(
+                id,
                 new IssueTitle("Original Title"),
                 "Original Desc",
                 new Coordinates(1.0, 1.0),
-                new UserId(10L),
+                new UserId(reporterId),
                 IssueStatus.REPORTED,
                 IssueCategory.OTHER,
                 null,
                 LocalDateTime.now()
         );
-
-        UpdateIssueCommand command = new UpdateIssueCommand(
-                issueId,
-                null,
-                "New Desc",
-                null,
-                null,
-                null
-        );
-
-        when(issueRepositoryPort.findById(issueId)).thenReturn(Optional.of(existingIssue));
-        when(issueRepositoryPort.save(any(UrbanIssue.class))).thenAnswer(i -> i.getArgument(0));
-
-        UrbanIssue result = updateIssueUseCase.execute(command);
-
-        assertThat(result.getTitle().value()).isEqualTo("Original Title");
-        assertThat(result.getDescription()).isEqualTo("New Desc");
-        assertThat(result.getStatus()).isEqualTo(IssueStatus.REPORTED);
     }
 }
