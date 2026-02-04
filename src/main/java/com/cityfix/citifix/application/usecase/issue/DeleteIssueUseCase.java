@@ -1,6 +1,7 @@
 package com.cityfix.citifix.application.usecase.issue;
 
 import com.cityfix.citifix.application.port.in.DeleteIssueInputPort;
+import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.User;
 import com.cityfix.citifix.domain.port.out.IssueRepositoryPort;
 import com.cityfix.citifix.domain.port.out.UserRepositoryPort;
@@ -18,15 +19,17 @@ public class DeleteIssueUseCase implements DeleteIssueInputPort {
     @Override
     @Transactional
     public void execute(Long issueId, String requesterEmail) {
-        if (!issueRepository.existsById(issueId)) {
-            throw new IllegalArgumentException("Issue not found");
-        }
+        UrbanIssue issue = issueRepository.findById(issueId)
+                .orElseThrow(() -> new IllegalArgumentException("Issue not found"));
 
         User requester = userRepository.findByEmail(requesterEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        if (!requester.getRoles().contains("ROLE_ADMIN")) {
-            throw new SecurityException("Access denied: Only admins can delete issues");
+        boolean isAdmin = requester.getRoles().contains("ROLE_ADMIN");
+        boolean isOwner = issue.getReporterId().value().equals(requester.getId().value());
+
+        if (!isAdmin && !isOwner) {
+            throw new SecurityException("Access denied: You can only delete your own issues");
         }
 
         issueRepository.deleteById(issueId);

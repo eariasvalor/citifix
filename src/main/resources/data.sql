@@ -14,7 +14,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'citizen@cityfix.com');
 
 
 -- ======================================================================================
--- 2. ROLES (Linking roles using a more robust check)
+-- 2. ROLES
 -- ======================================================================================
 
 -- ROLE_ADMIN for admin@cityfix.com
@@ -46,7 +46,7 @@ AND NOT EXISTS (
 
 
 -- ======================================================================================
--- 3. ISSUES (Variety of statuses and locations in Barcelona)
+-- 3. ISSUES (Variety of statuses and locations in Spain)
 -- ======================================================================================
 
 -- NOTE: We use subqueries to get the reporter's ID (citizen@cityfix.com)
@@ -61,7 +61,7 @@ WHERE email='citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Broken traffic light');
 
 INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id, created_at)
-SELECT 'Dangerous pothole', 'Bike lane near Plaza Cataluña has a deep hole.', 41.3870, 2.1700, 'IN_PROGRESS', 'ROAD', id, CURRENT_TIMESTAMP FROM users WHERE email='citizen@cityfix.com'
+SELECT 'Dangerous pothole', 'Bike lane near Plaça Catalunya has a deep hole.', 41.3870, 2.1700, 'IN_PROGRESS', 'ROAD', id, CURRENT_TIMESTAMP FROM users WHERE email='citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Dangerous pothole');
 
 INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id, created_at)

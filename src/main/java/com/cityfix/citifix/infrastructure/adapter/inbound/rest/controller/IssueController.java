@@ -108,7 +108,8 @@ public class IssueController {
     public ResponseEntity<IssueResponse> updateIssue(
             @PathVariable Long id,
             @RequestPart("data") UpdateIssueRequest request,
-            @RequestPart(value = "image", required = false) MultipartFile image
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            Principal principal
     ) throws IOException {
         var command = new UpdateIssueCommand(
                 id,
@@ -119,7 +120,7 @@ public class IssueController {
                 image
         );
 
-        UrbanIssue updatedIssue = updateIssueInputPort.execute(command);
+        UrbanIssue updatedIssue = updateIssueInputPort.execute(command, principal.getName());
 
         return ResponseEntity.ok(IssueResponse.fromDomain(updatedIssue));
     }

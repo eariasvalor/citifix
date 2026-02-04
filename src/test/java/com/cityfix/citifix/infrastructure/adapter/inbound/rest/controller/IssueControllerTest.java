@@ -150,6 +150,7 @@ class IssueControllerTest {
     @DisplayName("PATCH /api/issues/{id} - Should update issue details fully")
     void shouldUpdateIssueDetails() throws Exception {
         String newTitleStr = "New Title";
+        String userEmail = "alex@cityfix.com";
         UpdateIssueRequest request = new UpdateIssueRequest(newTitleStr, "Desc", "IN_PROGRESS", "ROAD");
 
         UrbanIssue mockIssue = new UrbanIssue(
@@ -164,7 +165,8 @@ class IssueControllerTest {
                 LocalDateTime.now()
         );
 
-        given(updateIssueInputPort.execute(any(UpdateIssueCommand.class))).willReturn(mockIssue);
+        given(updateIssueInputPort.execute(any(UpdateIssueCommand.class), eq(userEmail)))
+                .willReturn(mockIssue);
 
         MockMultipartFile dataPart = new MockMultipartFile(
                 "data",
@@ -175,9 +177,15 @@ class IssueControllerTest {
 
         mockMvc.perform(multipart("/api/issues/{id}", 1L)
                         .file(dataPart)
-                        .with(req -> { req.setMethod("PATCH"); return req; }))
+                        .principal(() -> userEmail)
+                        .with(req -> {
+                            req.setMethod("PATCH");
+                            return req;
+                        }))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value(newTitleStr));
+
+        verify(updateIssueInputPort).execute(any(UpdateIssueCommand.class), eq(userEmail));
     }
 
     @Test
@@ -241,6 +249,54 @@ class IssueControllerTest {
                         .file(dataPart)
                         .with(csrf()))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("DELETE /api/issues/{id} - Should allow USER to delete their own issue")
+    void shouldAllowUserToDeleteOwnIssue() throws Exception {
+        Long issueId = 1L;
+        String userEmail = "alex@cityfix.com";
+        Principal mockPrincipal = mock(Principal.class);
+
+        given(mockPrincipal.getName()).willReturn(userEmail);
+
+        doNothing().when(deleteIssueInputPort).execute(issueId, userEmail);
+
+        mockMvc.perform(delete("/api/issues/{id}", issueId)
+                        .principal(mockPrincipal))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Issue deleted successfully"));
+
+        verify(deleteIssueInputPort).execute(issueId, userEmail);
+    }
+
+    @Test
+    @DisplayName("PATCH /api/issues/{id} - USER can change title but NOT status")
+    void userCannotChangeStatus() throws Exception {
+        Long issueId = 1L;
+        String userEmail = "citizen@cityfix.com";
+
+        UpdateIssueRequest request = new UpdateIssueRequest("New Title", "Desc", "RESOLVED", "ROAD");
+
+        UrbanIssue resultIssue = createMockIssue(issueId, IssueStatus.REPORTED);
+
+        Principal mockPrincipal = mock(Principal.class);
+        given(mockPrincipal.getName()).willReturn(userEmail);
+
+        given(updateIssueInputPort.execute(any(UpdateIssueCommand.class), eq(userEmail)))
+                .willReturn(resultIssue);
+
+        MockMultipartFile dataPart = new MockMultipartFile(
+                "data", "", "application/json", objectMapper.writeValueAsBytes(request));
+
+        mockMvc.perform(multipart("/api/issues/{id}", issueId)
+                        .file(dataPart)
+                        .principal(mockPrincipal)
+                        .with(req -> { req.setMethod("PATCH"); return req; }))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("REPORTED"));
+
+        verify(updateIssueInputPort).execute(any(UpdateIssueCommand.class), eq(userEmail));
     }
 
 }
