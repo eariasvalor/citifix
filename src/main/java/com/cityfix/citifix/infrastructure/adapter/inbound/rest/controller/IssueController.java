@@ -36,6 +36,7 @@ public class IssueController {
     private final UpdateIssueStatusInputPort updateIssueStatusInputPort;
     private final UpdateIssueInputPort updateIssueInputPort;
     private final DeleteIssueInputPort deleteIssueInputPort;
+    private final FindIssueByIdInputPort findIssueByIdInputPort;
 
     @Operation(summary = "Create a new issue", description = "Report an issue with an optional image.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -134,5 +135,12 @@ public class IssueController {
         return ResponseEntity.ok(new IssueResponse.MessageResponse("Issue deleted successfully"));
     }
 
+    @Operation(summary = "Get issue by ID", description = "Retrieves a single urban issue by its unique identifier.")
+    @GetMapping("/{id}")
+    public ResponseEntity<IssueResponse> getIssueById(@PathVariable Long id) {
+        return findIssueByIdInputPort.execute(id)
+                .map(issue -> ResponseEntity.ok(IssueResponse.fromDomain(issue)))
+                .orElse(ResponseEntity.notFound().build());
+    }
 
 }

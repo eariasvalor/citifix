@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -68,6 +69,9 @@ class IssueControllerTest {
     private UserDetailsService userDetailsService;
     @MockBean
     private DeleteIssueUseCase deleteIssueInputPort;
+
+    @MockBean
+    private FindIssueByIdInputPort findIssueByIdInputPort;
 
     @Test
     @DisplayName("POST /api/issues - Should report issue and return 201")
@@ -299,4 +303,38 @@ class IssueControllerTest {
         verify(updateIssueInputPort).execute(any(UpdateIssueCommand.class), eq(userEmail));
     }
 
+    @Test
+    @DisplayName("GET /api/issues/{id} - Must return 200 and the issue")
+    void shouldReturnIssueFound() throws Exception {
+        Long id = 1L;
+        UrbanIssue issue = UrbanIssue.rehydrate(
+                id,
+                new IssueTitle("Broken streetlight"),
+                "No light",
+                new Coordinates(41.0, 2.0),
+                new UserId(1L),
+                IssueStatus.REPORTED,
+                IssueCategory.LIGHTING,
+                null
+        );
+
+        given(findIssueByIdInputPort.execute(id)).willReturn(Optional.of(issue));
+
+        mockMvc.perform(get("/api/issues/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.title").value("Broken streetlight"))
+                .andExpect(jsonPath("$.category").value("LIGHTING"));
+    }
+
+    @Test
+    @DisplayName("GET /api/issues/{id} - Must return 404 if it doesn't exist")
+    void shouldReturn404WhenNotFound() throws Exception {
+        Long id = 99L;
+        given(findIssueByIdInputPort.execute(id)).willReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/issues/{id}", id))
+                .andExpect(status().isNotFound());
+    }
 }
