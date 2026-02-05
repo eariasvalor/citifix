@@ -58,6 +58,9 @@ public class JpaUserRepositoryAdapter implements UserRepositoryPort {
     @Override
     public void deleteById(UserId id) {
         springRepository.deleteById(id.value());
-
+    }
+    @Override
+    public long countByRole(String role) {
+        return springRepository.countByRolesContaining(role);
     }
 }

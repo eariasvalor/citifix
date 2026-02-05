@@ -15,4 +15,5 @@ public interface UserRepositoryPort {
     Optional<User> findById(UserId id);
     void deleteById(UserId id);
     Page<User> findAll(int page, int size);
+    long countByRole(String role);
 }
