@@ -167,4 +167,18 @@ public class IssueController {
         return ResponseEntity.ok(responsePage);
     }
 
+    @GetMapping("/check-duplicates")
+    public ResponseEntity<List<IssueResponse>> checkDuplicates(
+            @RequestParam Double lat,
+            @RequestParam Double lon,
+            @RequestParam(defaultValue = "50") Double radius
+    ) {
+        var query = new FindNearbyIssuesQuery(lat, lon, null, null, radius, 0, 5);
+        List<UrbanIssue> possibleDuplicates = findNearbyIssuesInputPort.execute(query);
+
+        return ResponseEntity.ok(possibleDuplicates.stream()
+                .map(IssueResponse::fromDomain)
+                .toList());
+    }
+
 }
