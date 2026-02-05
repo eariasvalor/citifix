@@ -44,7 +44,7 @@ public final class UrbanIssue {
         this.status = status != null ? status : IssueStatus.REPORTED;
         this.category = category;
         this.imageUrl = imageUrl;
-        this.createdAt = (createdAt != null) ? createdAt : LocalDateTime.now();
+        this.createdAt = (id == null) ? LocalDateTime.now() : createdAt;
     }
 
     public static UrbanIssue rehydrate(

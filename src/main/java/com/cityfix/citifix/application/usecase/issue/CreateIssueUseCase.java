@@ -74,7 +74,7 @@ public class CreateIssueUseCase implements CreateIssueInputPort {
                 IssueStatus.REPORTED,
                 category,
                 imageUrl,
-                LocalDateTime.now()
+                null
         );
 
         UrbanIssue savedIssue = issueRepository.save(issue);

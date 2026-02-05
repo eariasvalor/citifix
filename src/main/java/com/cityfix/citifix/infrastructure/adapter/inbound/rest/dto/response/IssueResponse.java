@@ -11,7 +11,8 @@ public record IssueResponse(
         String status,
         String category,
         String reporterId,
-        String imageUrl
+        String imageUrl,
+        java.time.LocalDateTime createdAt
 ) {
 
     public static IssueResponse fromDomain(UrbanIssue issue) {
@@ -24,7 +25,8 @@ public record IssueResponse(
                 issue.getStatus() != null ? issue.getStatus().name() : null,
                 issue.getCategory() != null ? issue.getCategory().name() : "OTHER",
                 issue.getReporterId() != null ? issue.getReporterId().getValue().toString() : null,
-                issue.getImageUrl()
+                issue.getImageUrl(),
+                issue.getCreatedAt()
         );
     }
 
