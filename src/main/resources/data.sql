@@ -315,3 +315,28 @@ SELECT 'Expert-7', 'Desc', 40.6, -3.6, 'REPORTED', 'OTHER', id, CURRENT_TIMESTAM
 INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id, created_at)
 SELECT 'Expert-8', 'Desc', 40.7, -3.7, 'RESOLVED', 'ROAD', id, CURRENT_TIMESTAMP FROM users WHERE email='expert_reporter@cityfix.com';
 
+-- ======================================================================================
+-- 5. RECALCULAR Y ACTUALIZAR USER_STATS (Sincronización con urban_issues)
+-- ======================================================================================
+
+-- Primero, limpiamos la tabla para evitar duplicados si se re-ejecuta
+DELETE FROM user_stats;
+
+-- Insertamos las estadísticas calculadas basadas en la tabla urban_issues
+INSERT INTO user_stats (user_id, total_reported, in_progress_count, resolved_count, impact_points)
+SELECT
+    u.id,
+    COUNT(i.id) AS total_reported,
+    COUNT(CASE WHEN i.status = 'IN_PROGRESS' THEN 1 END) AS in_progress_count,
+    COUNT(CASE WHEN i.status = 'RESOLVED' THEN 1 END) AS resolved_count,
+    -- Según UserStatsEventListener, cada RESOLVED suma 100 puntos
+    (COUNT(CASE WHEN i.status = 'RESOLVED' THEN 1 END) * 100) AS impact_points
+FROM users u
+LEFT JOIN urban_issues i ON u.id = i.reporter_id
+GROUP BY u.id;
+
+-- Insertar registros para usuarios que no tienen incidencias reportadas aún (estadísticas a cero)
+INSERT INTO user_stats (user_id, total_reported, in_progress_count, resolved_count, impact_points)
+SELECT id, 0, 0, 0, 0
+FROM users
+WHERE id NOT IN (SELECT user_id FROM user_stats);
