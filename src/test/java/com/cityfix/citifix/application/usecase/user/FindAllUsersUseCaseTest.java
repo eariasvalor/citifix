@@ -8,11 +8,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,29 +31,35 @@ class FindAllUsersUseCaseTest {
     private FindAllUsersUseCase findAllUsersUseCase;
 
     @Test
-    @DisplayName("Should return a list of all users from the repository")
+    @DisplayName("Should return a page of all users from the repository")
     void shouldReturnListOfUsers() {
         User user1 = new User(1L, "admin@cityfix.com", "hash1", Set.of("ADMIN"));
         User user2 = new User(2L, "citizen@cityfix.com", "hash2", Set.of("USER"));
         List<User> expectedUsers = List.of(user1, user2);
 
-        when(userRepositoryPort.findAll(1, 10)).thenReturn(expectedUsers);
+        Page<User> expectedPage = new PageImpl<>(expectedUsers, PageRequest.of(0, 10), expectedUsers.size());
 
-        List<User> result = findAllUsersUseCase.execute(1, 10);
+        when(userRepositoryPort.findAll(0, 10)).thenReturn(expectedPage);
 
-        assertThat(result).hasSize(2);
-        assertThat(result).containsExactly(user1, user2);
-        verify(userRepositoryPort).findAll(1, 10);
+        Page<User> result = findAllUsersUseCase.execute(0, 10);
+
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent()).containsExactly(user1, user2);
+        verify(userRepositoryPort).findAll(0, 10);
     }
+
 
     @Test
     @DisplayName("Should return empty list when no users exist")
     void shouldReturnEmptyList() {
-        when(userRepositoryPort.findAll(1, 10)).thenReturn(List.of());
+        Page<User> emptyPage = new PageImpl<>(List.of(), PageRequest.of(1, 10), 0);
 
-        List<User> result = findAllUsersUseCase.execute(1, 10);
+        when(userRepositoryPort.findAll(1, 10)).thenReturn(emptyPage);
 
-        assertThat(result).isEmpty();
+        Page<User> result = findAllUsersUseCase.execute(1, 10);
+
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isZero();
         verify(userRepositoryPort).findAll(1, 10);
     }
 }

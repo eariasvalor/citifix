@@ -69,9 +69,10 @@ class IssueControllerTest {
     private UserDetailsService userDetailsService;
     @MockBean
     private DeleteIssueUseCase deleteIssueInputPort;
-
     @MockBean
     private FindIssueByIdInputPort findIssueByIdInputPort;
+    @MockBean
+    private FindIssuesByUserIdInputPort findIssuesByUserIdInputPort;
 
     @Test
     @DisplayName("POST /api/issues - Should report issue and return 201")

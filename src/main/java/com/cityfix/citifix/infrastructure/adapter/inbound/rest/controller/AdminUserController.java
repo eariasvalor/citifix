@@ -36,14 +36,14 @@ public class AdminUserController {
     @GetMapping
     @Operation(summary = "List all users with pagination")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponse>> getAllUsers(
+    public ResponseEntity<Page<UserResponse>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size)
     {
-        var users = findAllUsersPort.execute(page, size);
-        return ResponseEntity.ok(users.stream()
-                .map(UserResponse::fromDomain)
-                .toList());
+        Page<com.cityfix.citifix.domain.model.User> userPage = findAllUsersPort.execute(page, size);
+        Page<UserResponse> responsePage = userPage.map(UserResponse::fromDomain);
+
+        return ResponseEntity.ok(responsePage);
     }
 
     @PatchMapping("/{id}")

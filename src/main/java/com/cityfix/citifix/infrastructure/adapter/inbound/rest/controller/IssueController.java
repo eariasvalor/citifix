@@ -16,9 +16,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,6 +42,7 @@ public class IssueController {
     private final UpdateIssueInputPort updateIssueInputPort;
     private final DeleteIssueInputPort deleteIssueInputPort;
     private final FindIssueByIdInputPort findIssueByIdInputPort;
+    private final FindIssuesByUserIdInputPort findIssuesByUserIdUseCase;
 
     @Operation(summary = "Create a new issue", description = "Report an issue with an optional image.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -141,6 +147,24 @@ public class IssueController {
         return findIssueByIdInputPort.execute(id)
                 .map(issue -> ResponseEntity.ok(IssueResponse.fromDomain(issue)))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/user/{id}")
+    @Operation(summary = "Get issues by user with filters and pagination")
+    public ResponseEntity<Page<IssueResponse>> getUserIssues(
+            @PathVariable Long id,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        Page<UrbanIssue> issuesPage = findIssuesByUserIdUseCase.execute(id, status, category, pageable);
+
+        Page<IssueResponse> responsePage = issuesPage.map(IssueResponse::fromDomain);
+
+        return ResponseEntity.ok(responsePage);
     }
 
 }
