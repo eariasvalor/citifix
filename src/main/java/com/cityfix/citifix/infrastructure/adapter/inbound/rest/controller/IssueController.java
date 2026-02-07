@@ -188,9 +188,15 @@ public class IssueController {
     public ResponseEntity<Page<IssueResponse>> getAllIssues(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt,desc") String[] sort
+            @RequestParam(defaultValue = "createdAt,desc") String sort
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sort[0]).descending());
+        String[] sortParts = sort.split(",");
+        String sortBy = sortParts[0];
+        Sort.Direction direction = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
         Page<UrbanIssue> issuesPage = findAllIssuesInputPort.execute(pageable);
         Page<IssueResponse> responsePage = issuesPage.map(IssueResponse::fromDomain);
