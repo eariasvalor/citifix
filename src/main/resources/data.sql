@@ -113,14 +113,17 @@ AND NOT EXISTS (
 -- Fields: title, description, latitude, longitude, status, category, reporter_id
 
 -- --- BARCELONA (5 Issues) ---
-INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id, created_at)
-SELECT 'Broken traffic light', 'Red light stuck near Sagrada Familia.', 41.4036, 2.1744, 'REPORTED', 'LIGHTING', id, CURRENT_TIMESTAMP
+INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id, image_url, created_at)
+SELECT 'Broken traffic light', 'Red light stuck near Sagrada Familia.', 41.4036, 2.1744, 'REPORTED', 'LIGHTING', id,
+'https://res.cloudinary.com/dr3t29ukn/image/upload/v1770474395/mlvhitvdfiyzw69pwdpn.jpg', CURRENT_TIMESTAMP
 FROM users
 WHERE email='citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Broken traffic light');
 
-INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id, created_at)
-SELECT 'Dangerous pothole', 'Bike lane near Plaça Catalunya has a deep hole.', 41.3870, 2.1700, 'IN_PROGRESS', 'ROAD', id, CURRENT_TIMESTAMP FROM users WHERE email='citizen@cityfix.com'
+INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id, image_url, created_at)
+SELECT 'Dangerous pothole', 'Bike lane near Plaça Catalunya has a deep hole.', 41.3870, 2.1700, 'IN_PROGRESS', 'ROAD', id,
+'https://res.cloudinary.com/dr3t29ukn/image/upload/v1770474667/gsx7xpcvu75jprfetjcc.jpg', CURRENT_TIMESTAMP
+FROM users WHERE email='citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Dangerous pothole');
 
 INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id, created_at)
@@ -131,8 +134,10 @@ INSERT INTO urban_issues (title, description, latitude, longitude, status, categ
 SELECT 'No water in showers', 'Barceloneta beach showers not working.', 41.3784, 2.1925, 'REPORTED', 'OTHER', id, CURRENT_TIMESTAMP FROM users WHERE email='citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'No water in showers');
 
-INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id, created_at)
-SELECT 'Melted container', 'Trash container burnt near Camp Nou.', 41.3809, 2.1228, 'IN_PROGRESS', 'TRASH', id, CURRENT_TIMESTAMP FROM users WHERE email='citizen@cityfix.com'
+INSERT INTO urban_issues (title, description, latitude, longitude, status, category, reporter_id, image_url, created_at)
+SELECT 'Melted container', 'Trash container burnt near Camp Nou.', 41.3809, 2.1228, 'IN_PROGRESS', 'TRASH', id,
+'https://res.cloudinary.com/dr3t29ukn/image/upload/v1770473482/hxjnmmgtflzeacnersy3.jpg', CURRENT_TIMESTAMP
+FROM users WHERE email='citizen@cityfix.com'
 AND NOT EXISTS (SELECT 1 FROM urban_issues WHERE title = 'Melted container');
 
 

@@ -12,6 +12,8 @@ public record UpdateIssueRequest(
         String status,
 
         @Pattern(regexp = "LIGHTING|ROAD|TRASH|OTHER", message = "Invalid category value")
-        String category
+        String category,
+
+        boolean removeImage
 ) {
 }

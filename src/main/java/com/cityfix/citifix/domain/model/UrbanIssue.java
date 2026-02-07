@@ -107,20 +107,6 @@ public final class UrbanIssue {
         return withStatus(IssueStatus.RESOLVED);
     }
 
-    public UrbanIssue withImageUrl(String newImageUrl) {
-        return new UrbanIssue(
-                this.id,
-                this.title,
-                this.description,
-                this.coordinates,
-                this.reporterId,
-                this.status,
-                this.category,
-                newImageUrl,
-                this.createdAt
-        );
-    }
-
     private UrbanIssue withStatus(IssueStatus newStatus) {
         return new UrbanIssue(
                 this.id,
@@ -131,6 +117,20 @@ public final class UrbanIssue {
                 newStatus,
                 this.category,
                 this.imageUrl,
+                this.createdAt
+        );
+    }
+
+    public UrbanIssue withImageUrl(String newImageUrl) {
+        return new UrbanIssue(
+                this.id,
+                this.title,
+                this.description,
+                this.coordinates,
+                this.reporterId,
+                this.status,
+                this.category,
+                newImageUrl,
                 this.createdAt
         );
     }

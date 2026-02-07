@@ -8,5 +8,6 @@ public record UpdateIssueCommand(
         String description,
         String status,
         String category,
-        MultipartFile image
+        MultipartFile image,
+        boolean removeImage
 ) {}

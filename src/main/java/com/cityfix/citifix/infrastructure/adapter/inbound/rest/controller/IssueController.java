@@ -125,7 +125,8 @@ public class IssueController {
                 request.description(),
                 request.status(),
                 request.category(),
-                image
+                image,
+                request.removeImage()
         );
 
         UrbanIssue updatedIssue = updateIssueInputPort.execute(command, principal.getName());
