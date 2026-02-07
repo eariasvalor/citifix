@@ -64,7 +64,7 @@ class UpdateIssueUseCaseTest {
         UrbanIssue existingIssue = createBaseIssue(issueId, 10L);
 
         UpdateIssueCommand command = new UpdateIssueCommand(
-                issueId, "New Title", "New Description", null, "ROAD", null
+                issueId, "New Title", "New Description", null, "ROAD", null, false
         );
 
         when(issueRepositoryPort.findById(issueId)).thenReturn(Optional.of(existingIssue));
@@ -87,7 +87,7 @@ class UpdateIssueUseCaseTest {
         when(mockFile.isEmpty()).thenReturn(false);
         when(imageStoragePort.upload(mockFile)).thenReturn("http://new-image.url");
 
-        UpdateIssueCommand command = new UpdateIssueCommand(issueId, null, null, null, null, mockFile);
+        UpdateIssueCommand command = new UpdateIssueCommand(issueId, null, null, null, null, mockFile, false);
 
         when(issueRepositoryPort.findById(issueId)).thenReturn(Optional.of(existingIssue));
         when(userRepositoryPort.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(mockUser));
@@ -101,7 +101,7 @@ class UpdateIssueUseCaseTest {
     @Test
     @DisplayName("Should throw exception when issue not found")
     void shouldThrowExceptionWhenIssueNotFound() {
-        UpdateIssueCommand command = new UpdateIssueCommand(1L, "T", "D", null, "ROAD", null);
+        UpdateIssueCommand command = new UpdateIssueCommand(1L, "T", "D", null, "ROAD", null, false);
         when(issueRepositoryPort.findById(1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> updateIssueUseCase.execute(command, TEST_EMAIL))
@@ -114,7 +114,7 @@ class UpdateIssueUseCaseTest {
         Long issueId = 1L;
         UrbanIssue existingIssue = createBaseIssue(issueId, 999L);
 
-        UpdateIssueCommand command = new UpdateIssueCommand(issueId, "Title", null, null, null, null);
+        UpdateIssueCommand command = new UpdateIssueCommand(issueId, "Title", null, null, null, null, false);
 
         when(issueRepositoryPort.findById(issueId)).thenReturn(Optional.of(existingIssue));
         when(userRepositoryPort.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(mockUser));

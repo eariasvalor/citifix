@@ -47,7 +47,9 @@ public class UpdateIssueUseCase implements UpdateIssueInputPort {
         IssueCategory cat = command.category() != null ? IssueCategory.valueOf(command.category()) : null;
         UrbanIssue updatedIssue = originalIssue.updateDetails(command.title(), command.description(), cat);
 
-        if (command.image() != null && !command.image().isEmpty()) {
+        if (command.removeImage()) {
+            updatedIssue = updatedIssue.withImageUrl(null);
+        } else if (command.image() != null && !command.image().isEmpty()) {
             String newImageUrl = imageStoragePort.upload(command.image());
             updatedIssue = updatedIssue.withImageUrl(newImageUrl);
         }

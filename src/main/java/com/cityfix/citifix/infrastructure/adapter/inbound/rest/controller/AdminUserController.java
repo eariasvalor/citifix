@@ -78,12 +78,18 @@ public class AdminUserController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String category,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        String[] sortParts = sort.split(",");
+        String sortBy = sortParts[0];
+        Sort.Direction direction = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
         Page<UrbanIssue> issuesPage = findIssuesByUserIdUseCase.execute(id, status, category, pageable);
-
         Page<IssueResponse> responsePage = issuesPage.map(IssueResponse::fromDomain);
 
         return ResponseEntity.ok(responsePage);

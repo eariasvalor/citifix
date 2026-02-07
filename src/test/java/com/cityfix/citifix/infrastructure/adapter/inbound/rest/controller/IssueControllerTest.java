@@ -158,7 +158,7 @@ class IssueControllerTest {
     void shouldUpdateIssueDetails() throws Exception {
         String newTitleStr = "New Title";
         String userEmail = "alex@cityfix.com";
-        UpdateIssueRequest request = new UpdateIssueRequest(newTitleStr, "Desc", "IN_PROGRESS", "ROAD");
+        UpdateIssueRequest request = new UpdateIssueRequest(newTitleStr, "Desc", "IN_PROGRESS", "ROAD", false);
 
         UrbanIssue mockIssue = new UrbanIssue(
                 1L,
@@ -283,7 +283,7 @@ class IssueControllerTest {
         Long issueId = 1L;
         String userEmail = "citizen@cityfix.com";
 
-        UpdateIssueRequest request = new UpdateIssueRequest("New Title", "Desc", "RESOLVED", "ROAD");
+        UpdateIssueRequest request = new UpdateIssueRequest("New Title", "Desc", "RESOLVED", "ROAD", false);
 
         UrbanIssue resultIssue = createMockIssue(issueId, IssueStatus.REPORTED);
 
