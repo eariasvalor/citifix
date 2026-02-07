@@ -106,4 +106,9 @@ public class JpaIssueRepositoryAdapter implements IssueRepositoryPort {
         return repository.findAll(spec, pageable).map(issueMapper::toDomain);
     }
 
+    @Override
+    public Page<UrbanIssue> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(issueMapper::toDomain);
+    }
+
 }

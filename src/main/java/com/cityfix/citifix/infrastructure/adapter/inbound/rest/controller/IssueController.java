@@ -43,6 +43,7 @@ public class IssueController {
     private final DeleteIssueInputPort deleteIssueInputPort;
     private final FindIssueByIdInputPort findIssueByIdInputPort;
     private final FindIssuesByUserIdInputPort findIssuesByUserIdUseCase;
+    private final FindAllIssuesInputPort findAllIssuesInputPort;
 
     @Operation(summary = "Create a new issue", description = "Report an issue with an optional image.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -179,6 +180,21 @@ public class IssueController {
         return ResponseEntity.ok(possibleDuplicates.stream()
                 .map(IssueResponse::fromDomain)
                 .toList());
+    }
+
+    @Operation(summary = "Get all issues", description = "Retrieves a paginated list of all urban issues.")
+    @GetMapping
+    public ResponseEntity<Page<IssueResponse>> getAllIssues(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String[] sort
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort[0]).descending());
+
+        Page<UrbanIssue> issuesPage = findAllIssuesInputPort.execute(pageable);
+        Page<IssueResponse> responsePage = issuesPage.map(IssueResponse::fromDomain);
+
+        return ResponseEntity.ok(responsePage);
     }
 
 }

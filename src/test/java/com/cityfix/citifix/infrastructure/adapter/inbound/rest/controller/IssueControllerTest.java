@@ -73,6 +73,8 @@ class IssueControllerTest {
     private FindIssueByIdInputPort findIssueByIdInputPort;
     @MockBean
     private FindIssuesByUserIdInputPort findIssuesByUserIdInputPort;
+    @MockBean
+    private FindAllIssuesInputPort findAllIssuesInputPort;
 
     @Test
     @DisplayName("POST /api/issues - Should report issue and return 201")
