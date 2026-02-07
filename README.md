@@ -1,4 +1,4 @@
-# CityFixes: Urban Issue Management System 🏙️
+# CityFix: Urban Issue Management System 🏙️
 
 ![Status](https://img.shields.io/badge/Status-Finished-brightgreen?style=flat-square)
 ![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square)
@@ -9,7 +9,7 @@
 
 **CityFix** is a full-stack platform designed to bridge the gap between citizens and city administration. It allows users to report urban infrastructure issues (such as potholes, broken streetlights, or waste) via an interactive map, enabling local authorities to manage and resolve them efficiently based on geo-location.
 
-This project was developed as a custom "Urban Management" domain project, replacing the original "Virtual Pet" assignment in agreement with the mentor to focus on Domain-First principles and Hexagonal Architecture.
+> 💡 **Note:** This repository contains the **Backend (Core API)**. The Frontend application is hosted in a separate repository: [citifix-frontend](https://github.com/eariasvalor/citifix-frontend).
 
 ---
 
@@ -18,11 +18,11 @@ This project was developed as a custom "Urban Management" domain project, replac
 The project is divided into two main decoupled components:
 
 ### Backend (Core API)
-Built with **Java 21** and **Spring Boot 3.x**, implementing **Hexagonal Architecture (Ports and Adapters)** to ensure the business logic is independent of frameworks and external agents.
+Built with **Java 21** and **Spring Boot 3.5.9**, implementing **Hexagonal Architecture (Ports and Adapters)** to ensure the business logic is independent of frameworks and external agents.
 - **Domain Layer:** Pure business logic (Entities like `UrbanIssue`, `User`, and `UserStats`) without infrastructure dependencies.
 - **Persistence:** PostgreSQL with native spatial queries for geo-spatial searches.
 - **Security:** Stateless JWT-based authentication.
-- **Testing:** Robust coverage using JUnit 5, Mockito, and **Testcontainers** for real integration testing against Dockerized MySQL/PostgreSQL.
+- **Testing:** Robust coverage using JUnit 5, Mockito, and **Testcontainers** for real integration testing against Dockerized PostgreSQL.
 - **Documentation:** Integrated OpenAPI (Swagger UI) for interactive API exploration.
 
 ### Frontend (Client App)
@@ -46,18 +46,21 @@ A modern **Angular 18+** application using standalone components and reactive st
 
 ## 🛠️ Project Structure
 
+This project follows a decoupled architecture across two repositories:
+
+**[Backend Repository](https://github.com/eariasvalor/citifix)**
 ```text
-├── citifix-backend/          # Java Spring Boot API (Hexagonal)
-│   ├── src/main/java/.../domain       # Core entities and business rules
-│   ├── src/main/java/.../application  # Use cases and ports
-│   └── src/main/java/.../infrastructure # Adapters (REST, JPA, Security)
-└── citifix-frontend/         # Angular 18 Application
-    ├── src/app/core/services          # API & Auth logic
-    ├── src/app/features/dashboard     # Map & Issue components
-    └── src/app/features/auth          # Login & Registration
+├── src/main/java/.../domain       # Core entities and business rules
+├── src/main/java/.../application  # Use cases and ports
+└── src/main/java/.../infrastructure # Adapters (REST, JPA, Security)
+```
+**[Frontend Repository](https://github.com/eariasvalor/citifix-frontend)**
+```text
+├── src/app/core/services          # API & Auth logic
+├── src/app/features/dashboard     # Map & Issue components
+└── src/app/features/auth          # Login & Registration
 
 ```
-
 ---
 
 ## 🚦 Getting Started
@@ -67,22 +70,22 @@ A modern **Angular 18+** application using standalone components and reactive st
 * **Java 21** & **Maven**
 * **Docker** (for database services)
 
-### Backend Setup
-1. Navigate to the backend directory: `cd citifix-backend`
-2. Build the project: `mvn install`
-3. Start the application: `mvn spring-boot:run`
-4. Access API documentation: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+### Backend Setup (This Repository)
+1. **Clone this repository**: `git clone https://github.com/eariasvalor/citifix.git`
+2. **Build the project**: `mvn install`
+3. **Start the application**: `mvn spring-boot:run`
+4. **Access API documentation**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
 ### Frontend Setup
-1. Navigate to the frontend directory: `cd citifix-frontend`
-2. Install dependencies: `npm install`
-3. Start the development server: `npm start`
-4. The app will be available at: [http://localhost:4200](http://localhost:4200)
+1. **Clone the frontend repository**: `git clone https://github.com/eariasvalor/citifix-frontend.git`
+2. **Install dependencies**: `npm install`
+3. **Start the development server**: `npm start`
+4. **The app will be available at**: [http://localhost:4200](http://localhost:4200)
 
 ---
 
 ## ✅ Quality Assurance
 
-* **Integration Tests:** The backend uses **Testcontainers** to spin up real database instances during tests to ensure 100% compatibility.
-* **Validation:** Strict form and data integrity protection at both Domain and UI levels.
-* **Clean Code:** Adherence to **SOLID** principles and **Domain-Driven Design (DDD)**.
+* **Integration Tests**: The backend uses **Testcontainers** to create real database instances during testing and ensure full compatibility.
+* **Validation**: Strict validation and data integrity protection at both the **Domain** and **UI** layers.
+* **Clean Code**: Full adherence to **SOLID** and **Domain-Driven Design (DDD)** principles.
