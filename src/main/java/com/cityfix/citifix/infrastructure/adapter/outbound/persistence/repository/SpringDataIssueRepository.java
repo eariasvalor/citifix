@@ -38,5 +38,11 @@ public interface SpringDataIssueRepository extends JpaRepository<IssueEntity, Lo
 
     List<IssueEntity> findByReporterId(Long reporterId, Pageable pageable);
 
+    @Query("SELECT i.status, COUNT(i) FROM IssueEntity i GROUP BY i.status")
+    List<Object[]> countIssuesByStatus();
+
+    @Query("SELECT i.category, COUNT(i) FROM IssueEntity i GROUP BY i.category")
+    List<Object[]> countIssuesByCategory();
+
 
 }
