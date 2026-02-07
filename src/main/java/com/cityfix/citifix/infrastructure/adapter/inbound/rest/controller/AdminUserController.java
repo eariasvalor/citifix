@@ -6,6 +6,7 @@ import com.cityfix.citifix.application.port.in.FindIssuesByUserIdInputPort;
 import com.cityfix.citifix.application.port.in.UpdateUserInputPort;
 import com.cityfix.citifix.application.port.in.command.UpdateUserCommand;
 import com.cityfix.citifix.domain.model.UrbanIssue;
+import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request.UpdateUserRequest;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.response.IssueResponse;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.user.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -65,9 +66,6 @@ public class AdminUserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         deleteUserPort.execute(id);
         return ResponseEntity.noContent().build();
-    }
-
-    public record UpdateUserRequest(String email, Set<String> roles) {
     }
 
     @GetMapping("/{id}/issues")
