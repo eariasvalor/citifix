@@ -1,5 +1,6 @@
 package com.cityfix.citifix.infrastructure.adapter.outbound.persistence;
 
+import com.cityfix.citifix.domain.model.GlobalStats;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.domain.model.enums.IssueCategory;
 import com.cityfix.citifix.domain.model.enums.IssueStatus;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -109,6 +111,19 @@ public class JpaIssueRepositoryAdapter implements IssueRepositoryPort {
     @Override
     public Page<UrbanIssue> findAll(Pageable pageable) {
         return repository.findAll(pageable).map(issueMapper::toDomain);
+    }
+
+    @Override
+    public GlobalStats getGlobalStats() {
+        long total = repository.count();
+
+        Map<String, Long> statusMap = repository.countIssuesByStatus().stream()
+                .collect(Collectors.toMap(row -> row[0].toString(), row -> (Long) row[1]));
+
+        Map<String, Long> categoryMap = repository.countIssuesByCategory().stream()
+                .collect(Collectors.toMap(row -> row[0].toString(), row -> (Long) row[1]));
+
+        return new GlobalStats(total, statusMap, categoryMap);
     }
 
 }

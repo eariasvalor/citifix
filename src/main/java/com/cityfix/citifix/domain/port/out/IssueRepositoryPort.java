@@ -1,5 +1,6 @@
 package com.cityfix.citifix.domain.port.out;
 
+import com.cityfix.citifix.domain.model.GlobalStats;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,5 +17,6 @@ public interface IssueRepositoryPort {
     void deleteById(Long id);
     Page<UrbanIssue> findByReporterIdWithFilters(Long userId, String status, String category, Pageable pageable);
     Page<UrbanIssue> findAll(Pageable pageable);
+    GlobalStats getGlobalStats();
 
 }
