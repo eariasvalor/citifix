@@ -1,4 +1,4 @@
-# CityFix: Urban Issue Management System 🏙️
+# CityFixes: Urban Issue Management System 🏙️
 
 ![Status](https://img.shields.io/badge/Status-Finished-brightgreen?style=flat-square)
 ![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square)
@@ -7,7 +7,7 @@
 ![Architecture](https://img.shields.io/badge/Architecture-Hexagonal-blue?style=flat-square)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue?style=flat-square)
 
-**CityFix** is a full-stack platform designed to bridge the gap between citizens and city administration. It allows users to report urban infrastructure issues (such as potholes, broken streetlights, or waste) via an interactive map, enabling local authorities to manage and resolve them efficiently based on geo-location.
+**CityFixes** is a full-stack platform designed to bridge the gap between citizens and city administration. It allows users to report urban infrastructure issues (such as potholes, broken streetlights, or waste) via an interactive map, enabling local authorities to manage and resolve them efficiently based on geo-location.
 
 > 💡 **Note:** This repository contains the **Backend (Core API)**. The Frontend application is hosted in a separate repository: [citifix-frontend](https://github.com/eariasvalor/citifix-frontend).
 
