@@ -1,5 +1,6 @@
 package com.cityfix.citifix.domain.model;
 
+import com.cityfix.citifix.domain.service.ImpactRewardPolicy;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -48,5 +49,23 @@ public class UserStats {
 
     public UserStats withAddedImpactPoints(long points) {
         return new UserStats(userId, totalReported, inProgressCount, resolvedCount, impactPoints + points);
+    }
+
+    public UserStats applyStatusChange(String oldStatus, String newStatus, ImpactRewardPolicy policy) {
+        long pointsToAdd = policy.calculatePoints(oldStatus, newStatus);
+
+        UserStats updated = this;
+
+        if ("IN_PROGRESS".equals(oldStatus)) {
+            updated = updated.withDecrementedInProgress();
+        }
+
+        if ("IN_PROGRESS".equals(newStatus)) {
+            updated = updated.withIncrementedInProgress();
+        } else if ("RESOLVED".equals(newStatus)) {
+            updated = updated.withIncrementedResolved();
+        }
+
+        return updated.withAddedImpactPoints(pointsToAdd);
     }
 }

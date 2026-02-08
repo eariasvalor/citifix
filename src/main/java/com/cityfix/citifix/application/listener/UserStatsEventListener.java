@@ -4,6 +4,7 @@ import com.cityfix.citifix.domain.event.IssueCreatedEvent;
 import com.cityfix.citifix.domain.event.IssueStatusChangedEvent;
 import com.cityfix.citifix.domain.model.UserStats;
 import com.cityfix.citifix.domain.port.out.UserStatsRepositoryPort;
+import com.cityfix.citifix.domain.service.ImpactRewardPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class UserStatsEventListener {
 
     private final UserStatsRepositoryPort statsRepository;
+    private final ImpactRewardPolicy rewardPolicy;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -28,7 +30,11 @@ public class UserStatsEventListener {
         UserStats stats = statsRepository.findByUserId(event.getUserId())
                 .orElse(new UserStats(event.getUserId(), 0, 0, 0, 0));
 
-        UserStats updatedStats = applyStatusTransitions(stats, event.getOldStatus(), event.getNewStatus());
+        UserStats updatedStats = stats.applyStatusChange(
+                event.getOldStatus(),
+                event.getNewStatus(),
+                rewardPolicy
+        );
 
         statsRepository.save(updatedStats);
     }
