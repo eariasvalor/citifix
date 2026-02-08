@@ -109,8 +109,26 @@ public class JpaIssueRepositoryAdapter implements IssueRepositoryPort {
     }
 
     @Override
-    public Page<UrbanIssue> findAll(Pageable pageable) {
-        return repository.findAll(pageable).map(issueMapper::toDomain);
+    public Page<UrbanIssue> findAll(String category, String status, Long reporterId, Pageable pageable) {
+        Specification<IssueEntity> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+            if (status != null && !status.isBlank()) {
+                predicates.add(cb.equal(root.get("status"), status.toUpperCase()));
+            }
+
+            if (category != null && !category.isBlank()) {
+                predicates.add(cb.equal(root.get("category"), category.toUpperCase()));
+            }
+
+            if (reporterId != null) {
+                predicates.add(cb.equal(root.get("reporterId"), reporterId));
+            }
+
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        return repository.findAll(spec, pageable).map(issueMapper::toDomain);
     }
 
     @Override
@@ -125,5 +143,6 @@ public class JpaIssueRepositoryAdapter implements IssueRepositoryPort {
 
         return new GlobalStats(total, statusMap, categoryMap);
     }
+
 
 }

@@ -16,7 +16,7 @@ public interface IssueRepositoryPort {
     boolean existsById(Long id);
     void deleteById(Long id);
     Page<UrbanIssue> findByReporterIdWithFilters(Long userId, String status, String category, Pageable pageable);
-    Page<UrbanIssue> findAll(Pageable pageable);
+    Page<UrbanIssue> findAll(String category, String status, Long reporterId, Pageable pageable);
     GlobalStats getGlobalStats();
 
 }

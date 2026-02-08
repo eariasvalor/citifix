@@ -5,5 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface FindAllIssuesInputPort {
-    Page<UrbanIssue> execute(Pageable pageable);
+    Page<UrbanIssue> execute(String category, String status, Long reporterId, Pageable pageable);
+
 }

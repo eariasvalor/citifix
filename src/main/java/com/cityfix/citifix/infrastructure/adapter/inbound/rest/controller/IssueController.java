@@ -187,7 +187,10 @@ public class IssueController {
     public ResponseEntity<Page<IssueResponse>> getAllIssues(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort
+            @RequestParam(defaultValue = "createdAt,desc") String sort,
+            @Parameter(description = "Filter by status") @RequestParam(required = false) String status,
+            @Parameter(description = "Filter by category") @RequestParam(required = false) String category,
+            @Parameter(description = "Filter by reporter ID") @RequestParam(required = false) Long reporterId
     ) {
         String[] sortParts = sort.split(",");
         String sortBy = sortParts[0];
@@ -197,7 +200,7 @@ public class IssueController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<UrbanIssue> issuesPage = findAllIssuesInputPort.execute(pageable);
+        Page<UrbanIssue> issuesPage = findAllIssuesInputPort.execute(category, status, reporterId, pageable);
         Page<IssueResponse> responsePage = issuesPage.map(IssueResponse::fromDomain);
 
         return ResponseEntity.ok(responsePage);

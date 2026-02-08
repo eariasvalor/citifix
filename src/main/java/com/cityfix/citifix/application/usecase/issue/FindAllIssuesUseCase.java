@@ -17,7 +17,7 @@ public class FindAllIssuesUseCase implements FindAllIssuesInputPort {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UrbanIssue> execute(Pageable pageable) {
-        return issueRepository.findAll(pageable);
+    public Page<UrbanIssue> execute(String category, String status, Long reporterId, Pageable pageable) {
+        return issueRepository.findAll(category, status, reporterId, pageable);
     }
 }
