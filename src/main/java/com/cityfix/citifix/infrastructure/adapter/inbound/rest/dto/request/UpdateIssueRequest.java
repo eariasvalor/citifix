@@ -1,4 +1,4 @@
-package com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.issue;
+package com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request;
 
 import jakarta.validation.constraints.Pattern;
 

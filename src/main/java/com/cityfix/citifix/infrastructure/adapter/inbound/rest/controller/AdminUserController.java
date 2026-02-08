@@ -8,7 +8,7 @@ import com.cityfix.citifix.application.port.in.command.UpdateUserCommand;
 import com.cityfix.citifix.domain.model.UrbanIssue;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.request.UpdateUserRequest;
 import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.response.IssueResponse;
-import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.user.UserResponse;
+import com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.response.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +19,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/admin/users")

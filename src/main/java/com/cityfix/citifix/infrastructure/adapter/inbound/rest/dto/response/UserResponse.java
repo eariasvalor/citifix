@@ -1,4 +1,4 @@
-package com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.user;
+package com.cityfix.citifix.infrastructure.adapter.inbound.rest.dto.response;
 
 import com.cityfix.citifix.domain.model.User;
 import java.util.Set;
